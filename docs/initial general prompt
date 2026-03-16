@@ -1,0 +1,1 @@
+Use SvelteKit, TypeScript, TailwindCSS, Vite. The game is Duplicate Bridge with 4 players, no human opponents, using "robots". Robots have adjustable skill levels: beginner, intermediate, advanced, expert. Adhere to Duplicate Bridge rules and conventions. Include realistic game logic, AI opponents, UI components, tutorials, quizzes, progress tracking, and toggled memory views.

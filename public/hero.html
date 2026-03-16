@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridge Memory Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #d1fae5 0%, #ccfbf1 50%, #cffafe 100%);
+        }
+        .dropdown-hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        .dropdown-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .group:hover .dropdown-hidden {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- Header -->
+    <header class="bg-white/90 backdrop-blur-md shadow-lg border-b border-emerald-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white text-xl">♠</span>
+                    </div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        Bridge Memory Challenge
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600 font-medium">Welcome, Player</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top Navigation Menu -->
+    <nav class="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-center space-x-8 py-6">
+                <!-- Remember Cards Played Button -->
+                <div class="relative group">
+                    <button class="px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border border-white/30">
+                        <div class="flex items-center space-x-2">
+                            <span>Remember Cards Played</span>
+                        </div>
+                    </button>
+
+                    <!-- Dropdown Sub-menu -->
+                    <div class="absolute top-full left-0 mt-2 w-64 dropdown-hidden z-50">
+                        <div class="bg-white rounded-xl shadow-2xl border border-emerald-100 overflow-hidden">
+                            <button class="w-full px-6 py-4 text-left hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-colors duration-200 border-b border-emerald-50">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium hover:text-emerald-600">All Players</span>
+                                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </button>
+                            <button class="w-full px-6 py-4 text-left hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-colors duration-200">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium hover:text-emerald-600">Specific Player</span>
+                                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remember Cards Remaining Button -->
+                <div class="relative group">
+                    <button class="px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border border-white/30">
+                        <div class="flex items-center space-x-2">
+                            <span>Remember Cards Remaining</span>
+                        </div>
+                    </button>
+
+                    <!-- Dropdown Sub-menu -->
+                    <div class="absolute top-full left-0 mt-2 w-64 dropdown-hidden z-50">
+                        <div class="bg-white rounded-xl shadow-2xl border border-emerald-100 overflow-hidden">
+                            <button class="w-full px-6 py-4 text-left hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-colors duration-200 border-b border-emerald-50">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium hover:text-emerald-600">All Players</span>
+                                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </button>
+                            <button class="w-full px-6 py-4 text-left hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-colors duration-200">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium hover:text-emerald-600">Specific Player</span>
+                                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-16">
+            <h2 class="text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                Master Your Bridge Memory
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Elevate your Bridge game with advanced memory training. Track played cards, anticipate remaining cards, and gain the competitive edge that separates good players from great ones.
+            </p>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="grid md:grid-cols-2 gap-8 mb-16">
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-emerald-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-4">
+                        <span class="text-white text-xl">🃏</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">Track Cards Played</h3>
+                </div>
+                <p class="text-gray-600 leading-relaxed">
+                    Develop the ability to remember every card that hits the table. Practice with all four players or focus on specific opponents to sharpen your observational skills.
+                </p>
+            </div>
+
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-teal-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center mr-4">
+                        <span class="text-white text-xl">🎯</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800">Anticipate Cards Remaining</h3>
+                </div>
+                <p class="text-gray-600 leading-relaxed">
+                    Learn to calculate which cards are still in the deck. This crucial skill helps you make better decisions and predict your opponents' likely holdings.
+                </p>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-cyan-100">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">How It Works</h3>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">1</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Choose Focus</h4>
+                    <p class="text-sm text-gray-600">Select cards played or remaining</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">2</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Select Players</h4>
+                    <p class="text-sm text-gray-600">All players or specific focus</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">3</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Practice</h4>
+                    <p class="text-sm text-gray-600">Engage in memory exercises</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">4</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Improve</h4>
+                    <p class="text-sm text-gray-600">Track progress and advance</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Add click handlers for menu items
+        document.querySelectorAll('.dropdown-hidden button').forEach(button => {
+            button.addEventListener('click', function() {
+                const text = this.querySelector('span').textContent;
+                console.log('Selected:', text);
+                // Here you can add navigation logic
+            });
+        });
+    </script>
+</body>
+</html>
