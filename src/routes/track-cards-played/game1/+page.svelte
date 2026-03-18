@@ -8,6 +8,8 @@
 	let displayTime: number = 5;
 	let gameStarted: boolean = false;
 	let cardsRevealed: boolean = false;
+	let cardsRevealedOnce: boolean = false; // Track if cards have been revealed once
+	let gamePhase: 'setup' | 'memorize' | 'test' = 'setup'; // Track game phase
 	let timer: number | null = null;
 	
 	// Card data
@@ -19,6 +21,14 @@
 	
 	// Track individual card states for revealed cards
 	let revealedCardIds: string[] = [];
+	let clickedCardIds: string[] = []; // Track which cards have been clicked
+	
+	// Computed property to check if a card is clicked
+	$: isCardClicked = (cardId: string) => {
+		const result = clickedCardIds.includes(cardId);
+		console.log(`isCardClicked(${cardId}): ${result}, clickedCardIds: [${clickedCardIds.join(', ')}]`);
+		return result;
+	};
 	
 	// Initialize cards
 	function initializeGame() {
@@ -49,24 +59,28 @@
 	// Start game with selected mode
 	function startGame() {
 		gameStarted = true;
+		gamePhase = 'setup'; // Reset to setup phase
 		cardsRevealed = false;
+		cardsRevealedOnce = false; // Reset revealed once state
 		incorrectCount = 0;
 		attemptCount = 0;
 		feedbackMessage = '';
 		revealedCardIds = []; // Reset revealed cards
+		clickedCardIds = []; // Reset clicked cards
 		initializeGame();
 	}
 	
 	// Reveal cards (manual mode)
 	function revealCards() {
 		cardsRevealed = true;
-		if (handDisplayComponent) {
-			handDisplayComponent.flipAllToFace();
-		}
+		cardsRevealedOnce = true; // Mark that cards have been revealed once
+		gamePhase = 'memorize'; // Change to memorize phase
 		
 		if (gameMode === 'timed') {
 			// Start timer to hide cards
+			console.log(`Starting timer with displayTime: ${displayTime} seconds`);
 			timer = setTimeout(() => {
+				console.log('Timer expired - hiding cards');
 				hideCards();
 			}, displayTime * 1000);
 		}
@@ -74,12 +88,13 @@
 	
 	// Hide cards
 	function hideCards() {
+		console.log('hideCards() called - setting cardsRevealed to false');
+		gamePhase = 'test'; // Change to test phase
 		cardsRevealed = false;
 		revealedCardIds = []; // Reset revealed cards
-		if (handDisplayComponent) {
-			handDisplayComponent.flipAllToBack();
-		}
+		
 		if (timer) {
+			console.log('Clearing timer');
 			clearTimeout(timer);
 			timer = null;
 		}
@@ -87,28 +102,35 @@
 	
 	// Handle card click in memory test
 	function handleCardClick(suit: 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: string) {
-		if (cardsRevealed) return; // Only allow clicking when cards are hidden (face down)
+		if (cardsRevealed || gamePhase !== 'test') return; // Only allow clicking in test phase
 		
-		// Increment attempt count for every click
+		// Increment attempt count for EVERY click
 		attemptCount++;
 		
-		const card: BridgeCard = { suit, rank: rank as any };
-		
 		// Check if this card is in the hand
+		const cardId = `${suit}-${rank}`;
 		const isInHand = handCards.some(handCard => 
-			handCard.suit === card.suit && handCard.rank === card.rank
+			handCard.suit === suit && handCard.rank === rank
 		);
 		
+		console.log(`Card clicked: ${cardId}, Is in hand: ${isInHand}`);
+		console.log(`Current clickedCardIds: [${clickedCardIds.join(', ')}]`);
+		console.log(`Checking if ${cardId} is in clickedCardIds: ${clickedCardIds.includes(cardId)}`);
+		
 		if (isInHand) {
-			// Correct - add to revealed cards and update handCards to trigger individual flip
-			const cardId = `${suit}-${rank}`;
+			// Correct - add to revealed cards AND clicked cards
 			if (!revealedCardIds.includes(cardId)) {
 				revealedCardIds = [...revealedCardIds, cardId];
+			}
+			// Add to clickedCardIds if not already there
+			if (!clickedCardIds.includes(cardId)) {
+				clickedCardIds = [...clickedCardIds, cardId];
+				console.log(`Added to clickedCardIds: [${clickedCardIds.join(', ')}]`);
 			}
 			console.log('Card revealed:', cardId, 'Total revealed:', revealedCardIds.length);
 			feedbackMessage = 'Correct!';
 		} else {
-			// Incorrect
+			// Incorrect - DON'T add to clicked cards (only track correct ones)
 			incorrectCount++;
 			feedbackMessage = 'Card not in hand';
 		}
@@ -196,20 +218,21 @@
 	<header class="bg-white/90 backdrop-blur-md shadow-lg border-b border-emerald-200">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between items-center h-20">
-				<div class="flex items-center space-x-3">
-					<div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-lg">
-						<span class="text-white text-xl">🃏</span>
-					</div>
-					<h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-						Track Cards Played - Game 1
-					</h1>
-				</div>
 				<a 
 					href="/track-cards-played" 
 					class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg"
 				>
 					← Back to Menu
 				</a>
+				
+				<div class="flex items-center justify-center flex-1">
+					<div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-lg">
+						<span class="text-white text-xl">🃏</span>
+					</div>
+					<h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent text-center">
+						Track Cards Played - Game 1
+					</h1>
+				</div>
 			</div>
 		</div>
 	</header>
@@ -267,7 +290,7 @@
 					
 					<button 
 						on:click={startGame}
-						class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all transform hover:scale-105 shadow-lg"
+						class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg"
 					>
 						Start Game
 					</button>
@@ -281,18 +304,18 @@
 			<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-6 mb-6">
 				<div class="flex justify-between items-center">
 					<div class="flex space-x-4">
-						{#if !cardsRevealed}
+						{#if !cardsRevealed && !cardsRevealedOnce}
 							<button 
 								on:click={revealCards}
-								class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all transform hover:scale-105 shadow-lg"
+								class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg"
 							>
 								{gameMode === 'manual' ? 'Reveal Cards' : 'Reveal Cards'}
 							</button>
 						{:else}
-							{#if gameMode === 'manual'}
+							{#if gameMode === 'manual' && cardsRevealed}
 								<button 
 									on:click={hideCards}
-									class="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg"
+									class="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all shadow-lg"
 								>
 									Hide Cards
 								</button>
@@ -305,11 +328,13 @@
 							<div class="text-2xl font-bold text-red-600">Incorrect: {incorrectCount}</div>
 							<div class="text-2xl font-bold text-blue-600">Attempts: {attemptCount}</div>
 						</div>
-						{#if feedbackMessage}
-							<div class="text-lg font-medium {feedbackMessage.includes('Correct') ? 'text-green-600' : 'text-red-600'}">
-								{feedbackMessage}
-							</div>
-						{/if}
+						<div class="h-8 flex items-center justify-end">
+							{#if feedbackMessage}
+								<div class="text-lg font-medium {feedbackMessage.includes('Correct') ? 'text-green-600' : 'text-red-600'}">
+									{feedbackMessage}
+								</div>
+							{/if}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -342,14 +367,26 @@
 					<div class="space-y-3">
 						{#each ['spades', 'hearts', 'diamonds', 'clubs'] as suit}
 							<div class="flex flex-wrap gap-2">
-								{#each ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'] as rank}
-									<button
-										on:click={createCardClickHandler(suit, rank)}
-										disabled={cardsRevealed}
-										class="px-3 py-2 text-sm font-semibold rounded-lg border-2 transition-all {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300 hover:bg-red-50' : 'text-black border-gray-300 hover:bg-gray-50'} {!cardsRevealed ? 'hover:scale-105 cursor-pointer shadow-md' : 'opacity-50 cursor-not-allowed'}"
-									>
-										{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'diamonds'}♦{:else if suit === 'clubs'}♣{/if}{rank}
-									</button>
+								{#each ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] as rank}
+									{#if (!cardsRevealed && gamePhase === 'test') || isCardClicked(`${suit}-${rank}`)}
+										<button
+											on:click={createCardClickHandler(suit, rank)}
+											disabled={cardsRevealed || gamePhase !== 'test'}
+											class="px-3 py-2 text-sm font-semibold rounded-lg border-2 transition-all duration-150 min-w-[3rem] h-[2.5rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} {isCardClicked(`${suit}-${rank}`) ? 'bg-gray-200 text-gray-400 border-gray-400' : ''} hover:bg-gray-50 hover:shadow-lg {(!cardsRevealed && gamePhase === 'test') ? 'cursor-pointer shadow-md' : 'opacity-50 cursor-not-allowed'}"
+											style="{isCardClicked(`${suit}-${rank}`) ? 'color: rgb(156 163 175) !important; border-color: rgb(156 163 175) !important; background-color: rgb(229 231 235) !important;' : ''}"
+										>
+											{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'diamonds'}♦{:else if suit === 'clubs'}♣{/if}{rank}
+										</button>
+									{:else}
+										<button
+											on:click={createCardClickHandler(suit, rank)}
+											disabled={cardsRevealed || gamePhase !== 'test'}
+											class="px-3 py-2 text-sm font-semibold rounded-lg border-2 transition-all duration-150 min-w-[3rem] h-[2.5rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} {isCardClicked(`${suit}-${rank}`) ? 'bg-gray-200 text-gray-400 border-gray-400' : ''} hover:bg-gray-50 hover:shadow-lg {(!cardsRevealed && gamePhase === 'test') ? 'cursor-pointer shadow-md' : 'opacity-50 cursor-not-allowed'}"
+											style="{isCardClicked(`${suit}-${rank}`) ? 'color: rgb(156 163 175) !important; border-color: rgb(156 163 175) !important; background-color: rgb(229 231 235) !important;' : ''}"
+										>
+											{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'diamonds'}♦{:else if suit === 'clubs'}♣{/if}{rank}
+										</button>
+									{/if}
 								{/each}
 							</div>
 						{/each}
@@ -362,13 +399,20 @@
 	<!-- Bottom Navigation -->
 	<footer class="bg-white/90 backdrop-blur-md shadow-lg border-t border-emerald-200 mt-8">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-			<div class="flex justify-center">
+			<div class="flex justify-between items-center">
 				<a 
 					href="/" 
 					class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg"
 				>
 					🏠 Back to Home
 				</a>
+				
+				<button 
+					class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+					on:click={startGame}
+				>
+					{gameStarted ? 'Restart Game' : 'Start Memory Challenge'}
+				</button>
 			</div>
 		</div>
 	</footer>
