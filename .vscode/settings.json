@@ -1,0 +1,16 @@
+{
+	"typescript.suggest.autoImports": false,
+	"typescript.validate.enable": false,
+	"typescript.tsserver.maxTsServerMemory": 8192,
+	"svelte.plugin.typescript.enable": false,
+	"svelte.plugin.css.diagnostics.enable": false,
+	"files.exclude": {
+		"**/node_modules/**": true
+	},
+	"search.exclude": {
+		"**/node_modules": true
+	},
+	"markdownlint.ignore": [
+		"node_modules/**"
+	]
+}

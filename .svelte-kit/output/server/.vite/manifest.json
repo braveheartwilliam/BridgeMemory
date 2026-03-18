@@ -1,0 +1,118 @@
+{
+  ".svelte-kit/generated/server/internal.js": {
+    "file": "internal.js",
+    "imports": [
+      "_internal.js"
+    ],
+    "isEntry": true,
+    "src": ".svelte-kit/generated/server/internal.js"
+  },
+  "_internal.js": {
+    "dynamicImports": [
+      "src/hooks.server.ts"
+    ],
+    "file": "chunks/internal.js",
+    "imports": [
+      "_ssr.js"
+    ]
+  },
+  "_ssr.js": {
+    "file": "chunks/ssr.js"
+  },
+  "app.css": {
+    "file": "_app/immutable/assets/app.11115c48.css",
+    "src": "app.css"
+  },
+  "node_modules/@sveltejs/kit/src/runtime/components/error.svelte": {
+    "file": "entries/fallbacks/error.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/components/error.svelte"
+  },
+  "node_modules/@sveltejs/kit/src/runtime/components/layout.svelte": {
+    "file": "entries/fallbacks/layout.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/components/layout.svelte"
+  },
+  "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
+    "file": "index.js",
+    "imports": [
+      "_internal.js",
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/server/index.js"
+  },
+  "src/hooks.server.ts": {
+    "file": "chunks/hooks.server.js",
+    "isDynamicEntry": true,
+    "src": "src/hooks.server.ts"
+  },
+  "src/routes/+page.css": {
+    "file": "_app/immutable/assets/_page.a2b6f2bb.css",
+    "src": "src/routes/+page.css"
+  },
+  "src/routes/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/_page.a2b6f2bb.css",
+      "_app/immutable/assets/app.11115c48.css"
+    ],
+    "file": "entries/pages/_page.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/+page.svelte"
+  },
+  "src/routes/anticipate-cards-remaining/+page.css": {
+    "file": "_app/immutable/assets/_page.59a73fbd.css",
+    "src": "src/routes/anticipate-cards-remaining/+page.css"
+  },
+  "src/routes/anticipate-cards-remaining/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/_page.59a73fbd.css",
+      "_app/immutable/assets/app.11115c48.css"
+    ],
+    "file": "entries/pages/anticipate-cards-remaining/_page.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/anticipate-cards-remaining/+page.svelte"
+  },
+  "src/routes/hand-demo/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/app.11115c48.css"
+    ],
+    "file": "entries/pages/hand-demo/_page.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/hand-demo/+page.svelte"
+  },
+  "src/routes/track-cards-played/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/app.11115c48.css"
+    ],
+    "file": "entries/pages/track-cards-played/_page.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/track-cards-played/+page.svelte"
+  },
+  "src/routes/track-cards-played/game1/+page.svelte": {
+    "file": "entries/pages/track-cards-played/game1/_page.svelte.js",
+    "imports": [
+      "_ssr.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/track-cards-played/game1/+page.svelte"
+  }
+}
