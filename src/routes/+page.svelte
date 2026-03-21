@@ -250,10 +250,10 @@
 				<h3 class="text-2xl font-bold mb-4">Bridge Intelligence Advancement</h3>
 				<p class="text-gray-400 mb-8">Elevate your bridge game to the next level</p>
 				<div class="flex justify-center space-x-6">
-					<a href="#" class="text-gray-400 hover:text-white transition-colors">About</a>
-					<a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a>
-					<a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy</a>
-					<a href="#" class="text-gray-400 hover:text-white transition-colors">Terms</a>
+					<button class="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer">About</button>
+					<button class="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer">Contact</button>
+					<button class="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer">Privacy</button>
+					<button class="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer">Terms</button>
 				</div>
 				<div class="mt-8 text-gray-500 text-sm">
 					© 2024 Bridge Intelligence Advancement. All rights reserved.

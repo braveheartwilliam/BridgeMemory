@@ -3,9 +3,7 @@
 	"/anticipate-cards-remaining": [],
 	"/bridge-memory": [],
 	"/bridge-memory/track-cards-played": [],
+	"/bridge-memory/track-cards-played/game1": [],
 	"/bridge-memory/track-cards-played/game2": [],
-	"/hand-demo": [],
-	"/track-cards-played": [],
-	"/track-cards-played/game1": [],
-	"/track-cards-played/game2": []
+	"/hand-demo": []
 }

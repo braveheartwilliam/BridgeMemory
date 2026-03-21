@@ -591,14 +591,15 @@
 			// Don't gray out incorrect cards - just increment counter
 			incorrectCount++;
 		}
+	}
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-8">
 	<div class="max-w-6xl mx-auto">
 		<!-- Breadcrumb Navigation -->
 		<nav class="bg-white/80 backdrop-blur-sm border-b border-emerald-100 rounded-lg p-3 mb-6">
-			<ol class="flex items-center space-x-2 text-sm">
-				<li class="flex items-center">
+			<ol class="flex items-center justify-between space-x-2 text-sm">
+				<li class="flex items-center space-x-2">
 					<button 
 						onclick={goToMain}
 						class="text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
@@ -608,8 +609,6 @@
 					<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 					</svg>
-				</li>
-				<li class="flex items-center">
 					<button 
 						onclick={goToBridgeMemory}
 						class="text-emerald-600 hover:text-emerald-800 transition-colors font-medium"
@@ -619,8 +618,6 @@
 					<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 					</svg>
-				</li>
-				<li class="flex items-center">
 					<button 
 						onclick={goToTrackCardsPlayed}
 						class="text-teal-600 hover:text-teal-800 transition-colors font-medium"
@@ -630,44 +627,11 @@
 					<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 					</svg>
-				</li>
-				<li class="flex items-center">
 					<span class="text-cyan-600 font-semibold">Game 2</span>
 				</li>
 			</ol>
 		</nav>
 
-		<!-- Navigation Buttons -->
-		<div class="flex justify-between items-center mb-6">
-			<div class="flex space-x-3">
-				<button 
-					onclick={goToMain}
-					class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
-				>
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-					</svg>
-					<span>Main</span>
-				</button>
-				<button 
-					onclick={goToBridgeMemory}
-					class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
-				>
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-					</svg>
-					<span>Memory App</span>
-				</button>
-				<button 
-					onclick={goToTrackCardsPlayed}
-					class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center space-x-2"
-				>
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-					</svg>
-					<span>Track Cards</span>
-				</button>
-			</div>
 		<!-- Header -->
 		<header class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-6 mb-8">
 			<div class="flex justify-between items-center">
@@ -898,29 +862,37 @@
 		</div>
 	</div>
 		
-	<!-- Bottom Left Navigation -->
-			</div>
-
-<!-- Bottom Navigation - Part of page flow -->
+	<!-- Bottom Navigation - Part of page flow -->
 	<div class="bg-white/95 backdrop-blur-sm border-t border-gray-200 p-4 mt-8 space-y-2">
-		<button 
-			class="px-4 py-2 bg-gradient-to-br from-gray-500 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full text-left"
-			onclick={() => {
-				console.log('Previous - Game Mode clicked');
-				goto('/track-cards-played');
-			}}
-		>
-			Previous - Game Mode
-		</button>
-		<button 
-			class="px-4 py-2 bg-gradient-to-br from-gray-500 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full text-left"
-			onclick={() => {
-				console.log('Return to Game Configuration Menu clicked');
-				goto('/track-cards-played');
-			}}
-		>
-			Return to Game Configuration Menu
-		</button>
+		<div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+			<button 
+				class="px-4 py-2 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-left"
+				onclick={() => {
+					console.log('Main clicked');
+					goto('/');
+				}}
+			>
+				Main Menu
+			</button>
+			<button 
+				class="px-4 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-left"
+				onclick={() => {
+					console.log('Bridge Memory clicked');
+					goto('/bridge-memory');
+				}}
+			>
+				Bridge Memory App
+			</button>
+			<button 
+				class="px-4 py-2 bg-gradient-to-br from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-left"
+				onclick={() => {
+					console.log('Track Cards Played clicked');
+					goto('/bridge-memory/track-cards-played');
+				}}
+			>
+				Track Cards Played
+			</button>
+		</div>
 	</div>
 
 <style>

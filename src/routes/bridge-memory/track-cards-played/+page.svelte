@@ -57,14 +57,14 @@
 			
 			if (gameMode === 'one-card') {
 				console.log('Navigating to Game 2 (One Card mode)');
-				goto('/track-cards-played/game2?refresh=' + Date.now());
+				goto('/bridge-memory/track-cards-played/game2?refresh=' + Date.now());
 			} else if (gameMode === 'manual') {
 				gameMode = 'manual';
 				console.log('Navigating to Game 1');
-				goto('/track-cards-played/game1');
+				goto('/bridge-memory/track-cards-played/game1');
 			} else {
 				console.log('Navigating to Game 1');
-				goto('/track-cards-played/game1');
+				goto('/bridge-memory/track-cards-played/game1');
 			}
 		}, 100);
 	}
