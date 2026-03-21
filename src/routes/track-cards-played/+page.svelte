@@ -1,15 +1,27 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
 	import '../../app.css';
 </script>
 
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	let gameMode: string = 'full-hand';
-	let selectedPlayers: string = 'all';
+	let gameMode = $state<string>('manual');
+	let selectedPlayers = $state<string>('all');
+	let gameStarted = $state<boolean>(false);
+	let incorrectCount: number = 0;
+	let attemptCount: number = 0;
+	let feedbackMessage: string = '';
+
+	// Reactive statement to track gameMode changes
+	$effect(() => {
+		const gameModeValue = gameMode;
+		console.log(`gameMode changed to: "${gameModeValue}" (type: ${typeof gameModeValue})`);
+	});
 
 	onMount(() => {
 		console.log('Track Cards Played page loaded');
+		console.log(`Initial gameMode: "${gameMode}"`);
 	});
 
 	function selectGameMode(mode: string) {
@@ -25,9 +37,27 @@
 	function startGame() {
 		console.log('Starting Track Cards Played game');
 		console.log(`Mode: ${gameMode}, Players: ${selectedPlayers}`);
+		console.log(`Game mode type: ${typeof gameMode}`);
 		
-		// Navigate to Game 1
-		window.location.href = '/track-cards-played/game1';
+		// Add small delay to ensure template updates properly
+		setTimeout(() => {
+			gameStarted = true;
+			incorrectCount = 0;
+			attemptCount = 0;
+			feedbackMessage = '';
+			
+			if (gameMode === 'one-card') {
+				console.log('Navigating to Game 2 (One Card mode)');
+				goto('/track-cards-played/game2?refresh=' + Date.now());
+			} else if (gameMode === 'manual') {
+				gameMode = 'manual';
+				console.log('Navigating to Game 1');
+				goto('/track-cards-played/game1');
+			} else {
+				console.log('Navigating to Game 1');
+				goto('/track-cards-played/game1');
+			}
+		}, 100);
 	}
 </script>
 
@@ -124,24 +154,56 @@
 			<div class="text-center mt-8">
 				<button 
 					class="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-					on:click={startGame}
+					onclick={startGame}
 				>
 					Start Memory Challenge
 				</button>
 			</div>
 		</main>
 
-		<!-- Back Navigation -->
-		<nav class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-4 mt-8">
-			<div class="text-center">
-				<a 
-					href="/" 
-					class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors duration-300"
-				>
-					← Back to Home
-				</a>
-			</div>
-		</nav>
+		<!-- Game Mode Selection (shown after Start Memory Challenge is clicked) -->
+		{#if gameStarted}
+			<main class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
+				<h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">Game Mode Selection</h2>
+				
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+					<button 
+						onclick={() => {
+							gameMode = 'manual';
+							console.log('Manual Mode selected, navigating to Game 2 playing page');
+							goto('/track-cards-played/game2');
+						}}
+						class="p-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+					>
+						<div class="text-center">
+							<div class="text-4xl mb-4">🎮</div>
+							<h4 class="text-2xl font-bold mb-3">Manual Mode</h4>
+							<p class="text-sm opacity-90">Click cards yourself to flip them one at a time</p>
+						</div>
+					</button>
+					
+					<button 
+						onclick={() => {
+							gameMode = 'automated';
+							console.log('Automated Mode selected, navigating to Game 2 playing page');
+							goto('/track-cards-played/game2');
+						}}
+						class="p-8 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+					>
+						<div class="text-center">
+							<div class="text-4xl mb-4">🤖</div>
+							<h4 class="text-2xl font-bold mb-3">Automated Mode</h4>
+							<p class="text-sm opacity-90">Cards flip automatically at regular intervals</p>
+						</div>
+					</button>
+				</div>
+				
+				<div class="text-center text-sm text-gray-600 mt-8">
+					<p class="mb-2">🎯 <strong>Manual Mode:</strong> Control the pace and practice card recognition</p>
+					<p>🚀 <strong>Automated Mode:</strong> Test your memory with automatic card flipping</p>
+				</div>
+			</main>
+		{/if}
 	</div>
 </div>
 

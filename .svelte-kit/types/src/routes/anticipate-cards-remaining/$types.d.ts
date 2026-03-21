@@ -1,8 +1,7 @@
 import type * as Kit from '@sveltejs/kit';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-// @ts-ignore
-type MatcherParam<M> = M extends (param : string) => param is infer U ? U extends string ? U : string : string;
+type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 type RouteParams = {  };
 type RouteId = '/anticipate-cards-remaining';
 type MaybeWithVoid<T> = {} extends T ? T | void : T;
@@ -15,3 +14,4 @@ type PageParentData = EnsureDefined<import('../$types.js').LayoutData>;
 
 export type PageServerData = null;
 export type PageData = Expand<PageParentData>;
+export type PageProps = { params: RouteParams; data: PageData }

@@ -1,8 +1,7 @@
 import type * as Kit from '@sveltejs/kit';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-// @ts-ignore
-type MatcherParam<M> = M extends (param : string) => param is infer U ? U extends string ? U : string : string;
+type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 type RouteParams = {  };
 type RouteId = '/';
 type MaybeWithVoid<T> = {} extends T ? T | void : T;
@@ -12,11 +11,13 @@ type EnsureDefined<T> = T extends null | undefined ? {} : T;
 type OptionalUnion<U extends Record<string, any>, A extends keyof U = U extends U ? keyof U : never> = U extends unknown ? { [P in Exclude<A, keyof U>]?: never } & U : never;
 export type Snapshot<T = any> = Kit.Snapshot<T>;
 type PageParentData = EnsureDefined<LayoutData>;
-type LayoutRouteId = RouteId | "/" | "/anticipate-cards-remaining" | "/hand-demo" | "/track-cards-played" | "/track-cards-played/game1" | null
+type LayoutRouteId = RouteId | "/" | "/anticipate-cards-remaining" | "/hand-demo" | "/track-cards-played" | "/track-cards-played/game1" | "/track-cards-played/game2" | null
 type LayoutParams = RouteParams & {  }
 type LayoutParentData = EnsureDefined<{}>;
 
 export type PageServerData = null;
 export type PageData = Expand<PageParentData>;
+export type PageProps = { params: RouteParams; data: PageData }
 export type LayoutServerData = null;
 export type LayoutData = Expand<LayoutParentData>;
+export type LayoutProps = { params: LayoutParams; data: LayoutData; children: import("svelte").Snippet }

@@ -3,9 +3,3 @@
 </script>
 
 <slot />
-
-<style>
-	:global(body) {
-		font-family: 'Inter', system-ui, -apple-system, sans-serif;
-	}
-</style>

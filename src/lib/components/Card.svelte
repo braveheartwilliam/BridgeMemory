@@ -1,13 +1,8 @@
 <script lang="ts">
 	import type { Card } from '$lib/types/bridge';
 
-	export let card: Card;
-	export let size: 'small' | 'medium' | 'large' = 'medium';
-	export let clickable: boolean = false;
-	export let onClick: () => void = undefined;
-	export let flipped: boolean = false;
-	export let showBack: boolean = false;
-	export let bridgeTheme: boolean = false;
+	// Props using Svelte 5 runes
+	let { card, size = 'medium', clickable = false, onClick, flipped = false, bridgeTheme = false } = $props();
 
 	// Support both card interfaces (bridge types and game types)
 	const suitSymbols = {
@@ -18,43 +13,110 @@
 	};
 
 	const suitColors = {
-		hearts: 'text-red-500', 'H': 'text-red-500',
-		diamonds: 'text-red-500', 'D': 'text-red-500',
-		clubs: 'text-black', 'C': 'text-black',
-		spades: 'text-black', 'S': 'text-black'
+		hearts: 'text-red-600',
+		diamonds: 'text-red-600',
+		clubs: 'text-black',
+		spades: 'text-black'
 	};
 
 	const sizeClasses = {
-		small: 'w-8 h-12 text-sm',
-		medium: 'w-12 h-16 text-lg',
-		large: 'w-16 h-24 text-xl'
+		small: 'w-12 h-16',
+		medium: 'w-16 h-24',
+		large: 'w-20 h-28'
 	};
+
+	// Helper functions instead of derived
+	function getShowBack(): boolean {
+		return !flipped;
+	}
+
+	function getCardColor(): string {
+		return suitColors[card.suit];
+	}
+
+	function getSuitSymbol(): string {
+		return suitSymbols[card.suit];
+	}
 
 	// Get face card Unicode symbols
 	function getFaceCardSymbol(rank: string, suit: string): string {
 		if (rank === 'A') {
 			if (suit === 'S' || suit === 'spades') return '🂡';
 			if (suit === 'H' || suit === 'hearts') return '🂱';
-			if (suit === 'D' || suit === 'diamonds') return '🃁';
-			if (suit === 'C' || suit === 'clubs') return '🃑';
+			if (suit === 'D' || suit === 'diamonds') return '🂢';
+			if (suit === 'C' || suit === 'clubs') return '🂣';
 		}
 		if (rank === 'K') {
 			if (suit === 'S' || suit === 'spades') return '🂮';
 			if (suit === 'H' || suit === 'hearts') return '🂾';
-			if (suit === 'D' || suit === 'diamonds') return '🃎';
+			if (suit === 'D' || suit === 'diamonds') return '🂿';
 			if (suit === 'C' || suit === 'clubs') return '🃞';
 		}
 		if (rank === 'Q') {
 			if (suit === 'S' || suit === 'spades') return '🂭';
-			if (suit === 'H' || suit === 'hearts') return '🂽';
-			if (suit === 'D' || suit === 'diamonds') return '🃍';
-			if (suit === 'C' || suit === 'clubs') return '🃝';
+			if (suit === 'H' || suit === 'hearts') return '🂭';
+			if (suit === 'D' || suit === 'diamonds') return '🂭';
+			if (suit === 'C' || suit === 'clubs') return '🂭';
 		}
 		if (rank === 'J') {
 			if (suit === 'S' || suit === 'spades') return '🂫';
-			if (suit === 'H' || suit === 'hearts') return '🂻';
-			if (suit === 'D' || suit === 'diamonds') return '🃋';
-			if (suit === 'C' || suit === 'clubs') return '🃛';
+			if (suit === 'H' || suit === 'hearts') return '🂫';
+			if (suit === 'D' || suit === 'diamonds') return '🂫';
+			if (suit === 'C' || suit === 'clubs') return '🂫';
+		}
+		if (rank === '10') {
+			if (suit === 'S' || suit === 'spades') return '🂪';
+			if (suit === 'H' || suit === 'hearts') return '🂪';
+			if (suit === 'D' || suit === 'diamonds') return '🂪';
+			if (suit === 'C' || suit === 'clubs') return '🂪';
+		}
+		if (rank === '9') {
+			if (suit === 'S' || suit === 'spades') return '🂩';
+			if (suit === 'H' || suit === 'hearts') return '🂩';
+			if (suit === 'D' || suit === 'diamonds') return '🂩';
+			if (suit === 'C' || suit === 'clubs') return '🂩';
+		}
+		if (rank === '8') {
+			if (suit === 'S' || suit === 'spades') return '🂨';
+			if (suit === 'H' || suit === 'hearts') return '🂨';
+			if (suit === 'D' || suit === 'diamonds') return '🂨';
+			if (suit === 'C' || suit === 'clubs') return '🂨';
+		}
+		if (rank === '7') {
+			if (suit === 'S' || suit === 'spades') return '🂧';
+			if (suit === 'H' || suit === 'hearts') return '🂧';
+			if (suit === 'D' || suit === 'diamonds') return '🂧';
+			if (suit === 'C' || suit === 'clubs') return '🂧';
+		}
+		if (rank === '6') {
+			if (suit === 'S' || suit === 'spades') return '🂦';
+			if (suit === 'H' || suit === 'hearts') return '🂦';
+			if (suit === 'D' || suit === 'diamonds') return '🂦';
+			if (suit === 'C' || suit === 'clubs') return '🂦';
+		}
+		if (rank === '5') {
+			if (suit === 'S' || suit === 'spades') return '🂤';
+			if (suit === 'H' || suit === 'hearts') return '🂤';
+			if (suit === 'D' || suit === 'diamonds') return '🂤';
+			if (suit === 'C' || suit === 'clubs') return '🂤';
+		}
+		if (rank === '4') {
+			if (suit === 'S' || suit === 'spades') return '�';
+			if (suit === 'H' || suit === 'hearts') return '�';
+			if (suit === 'D' || suit === 'diamonds') return '�';
+			if (suit === 'C' || suit === 'clubs') return '�';
+		}
+		if (rank === '3') {
+			if (suit === 'S' || suit === 'spades') return '🂣';
+			if (suit === 'H' || suit === 'hearts') return '🂣';
+			if (suit === 'D' || suit === 'diamonds') return '🂢';
+			if (suit === 'C' || suit === 'clubs') return '🂢';
+		}
+		if (rank === '2') {
+			if (suit === 'S' || suit === 'spades') return '🂢';
+			if (suit === 'H' || suit === 'hearts') return '🂢';
+			if (suit === 'D' || suit === 'diamonds') return '🂢';
+			if (suit === 'C' || suit === 'clubs') return '🂢';
 		}
 		return rank;
 	}
@@ -65,14 +127,15 @@
 	}
 </script>
 
-<div 
-	class="{sizeClasses[size]} relative border-2 rounded-lg shadow-md flex items-center justify-center cursor-{clickable ? 'pointer' : 'default'} hover:shadow-lg transition-all {bridgeTheme ? 'overflow-hidden' : 'bg-white border-gray-300'}"
-	style="transform-style: preserve-3d; transition: transform 0.3s; {flipped ? 'transform: rotateY(180deg)' : ''};"
+<button 
+	type="button"
+	class="{sizeClasses[size]} relative border-2 rounded-lg shadow-md flex items-center justify-center hover:shadow-lg transition-all {bridgeTheme ? 'overflow-hidden' : 'bg-white border-gray-300'}"
+	style="transform-style: preserve-3d; transition: transform 0.3s;"
 	onclick={clickable ? onClick : undefined}
 >
 	{#if bridgeTheme}
 		<!-- Bridge-themed card with face/back -->
-		{#if showBack}
+		{#if !flipped}
 			<!-- Card back -->
 			<div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-800 to-blue-600 border-2 border-blue-900 rounded-lg">
 				<!-- Bridge-themed pattern with suit symbols -->
@@ -121,4 +184,4 @@
 		<span class="font-bold {suitColors[card.suit]}">{card.rank}</span>
 		<span class="text-2xl {suitColors[card.suit]}">{suitSymbols[card.suit]}</span>
 	{/if}
-</div>
+</button>

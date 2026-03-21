@@ -7,7 +7,8 @@ export const nodes = [
 	() => import('./nodes/3'),
 	() => import('./nodes/4'),
 	() => import('./nodes/5'),
-	() => import('./nodes/6')
+	() => import('./nodes/6'),
+	() => import('./nodes/7')
 ];
 
 export const server_loads = [];
@@ -17,11 +18,22 @@ export const dictionary = {
 		"/anticipate-cards-remaining": [3],
 		"/hand-demo": [4],
 		"/track-cards-played": [5],
-		"/track-cards-played/game1": [6]
+		"/track-cards-played/game1": [6],
+		"/track-cards-played/game2": [7]
 	};
 
 export const hooks = {
 	handleError: (({ error }) => { console.error(error) }),
+	
+	reroute: (() => {}),
+	transport: {}
 };
 
-export { default as root } from '../root.svelte';
+export const decoders = Object.fromEntries(Object.entries(hooks.transport).map(([k, v]) => [k, v.decode]));
+export const encoders = Object.fromEntries(Object.entries(hooks.transport).map(([k, v]) => [k, v.encode]));
+
+export const hash = false;
+
+export const decode = (type, value) => decoders[type](value);
+
+export { default as root } from '../root.js';
