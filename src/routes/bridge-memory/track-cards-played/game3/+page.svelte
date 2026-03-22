@@ -28,6 +28,19 @@
 	let currentFlippedCard = $state<string | null>(null);
 	let allCardsFlippedOnce = $state<boolean>(false);
 	let lastCardFlippedBack = $state<boolean>(false);
+	// Game options state
+	let gameOptions = $state('choose-tricks');
+	let tricksCount = $state(2);
+	let trickDisplayTime = $state(5); // Time a trick is displayed in seconds (default 5)
+
+	// Trick-based gameplay state
+	let currentTrick = $state<string[]>([]); // Cards in current trick
+	let completedTricks = $state<string[][]>([]); // All completed tricks
+	let currentTrickIndex = $state(0); // Index for trick formation
+	let trickPhase = $state<'setup' | 'playing' | 'memory' | 'guessing'>('setup'); // Game phase
+	let trickTimer = $state<number | null>(null); // Timer for trick display
+	let currentSetTricks = $state<string[][]>([]); // Tricks in current memory set
+	let tricksInCurrentSet = $state(0); // Count of tricks in current set
 
 	// Navigation functions
 	function goToTrackCardsPlayed() {
@@ -97,6 +110,12 @@
 		attemptCount = 0;
 		feedbackMessage = '';
 		
+		// Reset counters for new game
+		correctlyMatchedCards = [];
+		manuallyClickedCards = [];
+		handCardFlippedIds = [];
+		allPossibleCardFlippedIds = [];
+		
 		// For Game 3-2: Declarer and Dummy hands are face-up by default
 		// Add all cards from Declarer (hand4) and Dummy (hand1) to correctly matched cards
 		const declarerAndDummyCards = [...hand1Cards, ...hand4Cards];
@@ -105,6 +124,14 @@
 		
 		// Add Declarer and Dummy cards to handCardFlippedIds so they appear face-up
 		handCardFlippedIds = [...correctlyMatchedCards];
+		
+		// Start trick-based gameplay
+		console.log('🃏 Starting trick-based gameplay');
+		trickPhase = 'playing';
+		currentSetTricks = [];
+		tricksInCurrentSet = 0;
+		currentTrick = [];
+		startTrickFormation();
 	}
 
 	// Reset the game
@@ -128,9 +155,154 @@
 			clearTimeout(autoFlipTimer);
 			autoFlipTimer = null;
 		}
+		if (trickTimer) {
+			clearTimeout(trickTimer);
+			trickTimer = null;
+		}
 		allCardsFlippedOnce = false;
 		lastCardFlippedBack = false;
+		
+		// Reset trick-based state
+		currentTrick = [];
+		completedTricks = [];
+		currentTrickIndex = 0;
+		trickPhase = 'setup';
+		currentSetTricks = [];
+		tricksInCurrentSet = 0;
+		
 		initializeCards();
+	}
+
+	// Trick-based gameplay functions
+	function startNextSetOfTricks() {
+		console.log('🎯 Starting next set of tricks');
+		trickPhase = 'playing';
+		currentSetTricks = [];
+		tricksInCurrentSet = 0;
+		currentTrick = [];
+		startTrickFormation();
+	}
+
+	function startTrickFormation() {
+		console.log('🃏 Starting trick formation');
+		currentTrick = [];
+		currentTrickIndex = 0;
+		trickPhase = 'playing';
+		selectNextCardForTrick();
+	}
+
+	function selectNextCardForTrick() {
+		console.log('🎴 Selecting next card for trick');
+		
+		// Order: Declarer -> West Opponent -> Dummy -> East Opponent
+		const hands = [
+			{ cards: hand4Cards, name: 'Declarer' },
+			{ cards: hand2Cards, name: 'West Opponent' },
+			{ cards: hand1Cards, name: 'Dummy' },
+			{ cards: hand3Cards, name: 'East Opponent' }
+		];
+
+		if (currentTrickIndex >= hands.length) {
+			// Trick is complete, display it
+			displayCurrentTrick();
+			return;
+		}
+
+		const currentHand = hands[currentTrickIndex];
+		const availableCards = currentHand.cards.filter(card => 
+			!isCardInCompletedTricks(`${card.suit}-${card.rank}`)
+		);
+
+		if (availableCards.length === 0) {
+			// No cards left in this hand, skip to next
+			currentTrickIndex++;
+			selectNextCardForTrick();
+			return;
+		}
+
+		// Select a random card from available cards
+		const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+		const cardId = `${randomCard.suit}-${randomCard.rank}`;
+		
+		currentTrick.push(cardId);
+		removeCardFromHand(randomCard.suit, randomCard.rank);
+		
+		currentTrickIndex++;
+		selectNextCardForTrick();
+	}
+
+	function removeCardFromHand(suit: string, rank: string) {
+		console.log(`🗑️ Removing ${suit}-${rank} from hand`);
+		
+		// Remove from each hand's cards
+		hand1Cards = hand1Cards.filter(card => !(card.suit === suit && card.rank === rank));
+		hand2Cards = hand2Cards.filter(card => !(card.suit === suit && card.rank === rank));
+		hand3Cards = hand3Cards.filter(card => !(card.suit === suit && card.rank === rank));
+		hand4Cards = hand4Cards.filter(card => !(card.suit === suit && card.rank === rank));
+	}
+
+	function isCardInCompletedTricks(cardId: string): boolean {
+		return completedTricks.some(trick => trick.includes(cardId));
+	}
+
+	function displayCurrentTrick() {
+		console.log('👁️ Displaying current trick:', currentTrick);
+		
+		// Add to completed tricks
+		completedTricks.push([...currentTrick]);
+		currentSetTricks.push([...currentTrick]);
+		tricksInCurrentSet++;
+		
+		// Set timer to automatically move to next trick
+		if (trickTimer) {
+			clearTimeout(trickTimer);
+		}
+		
+		trickTimer = setTimeout(() => {
+			// Clear current trick after display time
+			console.log('🗑️ Removing current trick after display time');
+			currentTrick = [];
+			
+			if (tricksInCurrentSet >= tricksCount) {
+				// Memory phase - stop trick formation and start guessing
+				trickPhase = 'guessing';
+				feedbackMessage = `Memory phase! ${tricksCount} tricks completed. Click cards in "All Possible Cards" to guess the cards.`;
+				setTimeout(() => {
+					feedbackMessage = '';
+				}, 5000);
+			} else {
+				// Start next trick
+				startTrickFormation();
+			}
+		}, trickDisplayTime * 1000);
+	}
+
+	function checkTrickGuess(suit: string, rank: string) {
+		console.log('🎯 Checking trick guess:', `${suit}-${rank}`);
+		
+		const cardId = `${suit}-${rank}`;
+		attemptCount++;
+		
+		// Check if card is in current set of tricks
+		const isInTricks = currentSetTricks.some(trick => trick.includes(cardId));
+		
+		if (isInTricks) {
+			feedbackMessage = 'Correct';
+			setTimeout(() => {
+				feedbackMessage = '';
+			}, 2000);
+		} else {
+			feedbackMessage = 'Incorrect';
+			incorrectCount++;
+			setTimeout(() => {
+				feedbackMessage = '';
+			}, 2000);
+		}
+		
+		// Mark card as clicked in All Possible Cards
+		if (!allPossibleCardFlippedIds.includes(cardId)) {
+			allPossibleCardFlippedIds = [...allPossibleCardFlippedIds, cardId];
+		}
 	}
 
 	// Handle card clicks in manual mode
@@ -222,7 +394,7 @@
 	onMount(() => {
 		console.log('🚀 Game 3 component mounted');
 		initializeCards();
-		startGame(); // Auto-start the game like in Game 1
+		// Game will start when user clicks "Start Memory Game" button
 	});
 
 	// Sort cards by suit and rank
@@ -239,26 +411,38 @@
 
 	// Check if a card is flipped
 	function isCardFlipped(cardId: string): boolean {
-		return flippedCardIds.includes(cardId) || correctlyMatchedCards.includes(cardId);
+		return [...handCardFlippedIds, ...allPossibleCardFlippedIds].includes(cardId) || correctlyMatchedCards.includes(cardId);
 	}
 
 	// Check if a card is correctly matched
 	function isCardCorrectlyMatched(cardId: string): boolean {
 		return correctlyMatchedCards.includes(cardId);
 	}
+	
+	function isAllPossibleCardFlipped(cardId: string): boolean {
+		return allPossibleCardFlippedIds.includes(cardId);
+	}
 
 	// Handle card click in "All Possible Cards" section
 	function handleAllPossibleCardsClick(suit: 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: string) {
 		console.log('🎯 ALL POSSIBLE CARDS CLICK FUNCTION CALLED!');
-		if (gameMode !== 'manual') {
-			console.log('❌ Not in manual mode, returning');
-			return;
-		}
 		
 		const cardId = `${suit}-${rank}`;
 		console.log('=== ALL POSSIBLE CARDS CLICK ===');
 		console.log('Card ID:', cardId);
-		console.log('Game mode:', gameMode);
+		console.log('Trick phase:', trickPhase);
+		
+		// Use trick-based guessing logic if in guessing phase
+		if (trickPhase === 'guessing') {
+			checkTrickGuess(suit, rank);
+			return;
+		}
+		
+		// Original logic for other phases
+		if (gameMode !== 'manual') {
+			console.log('❌ Not in manual mode, returning');
+			return;
+		}
 		
 		// Check if allowed (all hand cards clicked and last card face down)
 		console.log('🔍 All Possible Cards check:');
@@ -327,18 +511,11 @@
 			// Incorrect choice - card doesn't match any in "Your Hand"
 			console.log('❌ Incorrect choice! No matching card in hand');
 			feedbackMessage = 'Incorrect Choice!';
+			incorrectCount++;
 			setTimeout(() => {
 				feedbackMessage = '';
 			}, 2000);
-			
-			// Add to All Possible Cards flipped IDs
-			allPossibleCardFlippedIds = [...allPossibleCardFlippedIds, cardId];
 		}
-	}
-
-	// Check if an All Possible Card is flipped
-	function isAllPossibleCardFlipped(cardId: string): boolean {
-		return allPossibleCardFlippedIds.includes(cardId);
 	}
 </script>
 
@@ -390,23 +567,70 @@
 		<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
 				<div class="bg-emerald-50 rounded-lg p-4">
-					<div class="text-2xl font-bold text-emerald-600">{attemptCount}</div>
-					<div class="text-sm text-gray-600">Attempts</div>
-				</div>
-				<div class="bg-red-50 rounded-lg p-4">
-					<div class="text-2xl font-bold text-red-600">{incorrectCount}</div>
-					<div class="text-sm text-gray-600">Incorrect</div>
-				</div>
-				<div class="bg-blue-50 rounded-lg p-4">
-					<div class="text-2xl font-bold text-blue-600">{correctlyMatchedCards.length}</div>
+					<div class="text-2xl font-bold text-emerald-600">{attemptCount - incorrectCount}</div>
 					<div class="text-sm text-gray-600">Found</div>
 				</div>
 				<div class="bg-purple-50 rounded-lg p-4">
-					<div class="text-2xl font-bold text-purple-600">{hand1Cards.length + hand2Cards.length + hand3Cards.length + hand4Cards.length - correctlyMatchedCards.length}</div>
+					<div class="text-2xl font-bold text-purple-600">{incorrectCount}</div>
 					<div class="text-sm text-gray-600">Remaining</div>
+				</div>
+				<div class="bg-blue-50 rounded-lg p-4">
+					<div class="text-2xl font-bold text-blue-600">{attemptCount}</div>
+					<div class="text-sm text-gray-600">Attempted</div>
+				</div>
+				<div class="bg-orange-50 rounded-lg p-4">
+					<div class="text-2xl font-bold text-orange-600">{incorrectCount}</div>
+					<div class="text-sm text-gray-600">Incorrect</div>
 				</div>
 			</div>
 		</div>
+
+		<!-- Game Options -->
+		{#if !gameStarted}
+			<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+				<div class="space-y-4">
+					<div class="flex items-center space-x-4">
+						<input 
+							type="radio" 
+							name="gameOptions" 
+							value="choose-tricks" 
+							bind:group={gameOptions}
+							class="w-4 h-4 text-teal-600 focus:ring-teal-500"
+						/>
+						<span class="text-gray-700">You choose number of tricks to guess</span>
+					</div>
+					
+					<!-- Conditional numeric entry field -->
+					{#if gameOptions === 'choose-tricks'}
+						<div class="mt-4 p-4 bg-teal-50 rounded-lg border border-teal-200">
+							<label class="flex items-center space-x-3">
+								<span class="text-gray-700 font-medium">How many tricks between each memory challenge</span>
+								<input 
+									type="number" 
+									bind:value={tricksCount}
+									min="1"
+									max="13"
+									class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-center"
+								/>
+							</label>
+						</div>
+						
+						<div class="mt-4 p-4 bg-teal-50 rounded-lg border border-teal-200">
+							<label class="flex items-center space-x-3">
+								<span class="text-gray-700 font-medium">Time a trick is displayed (seconds)</span>
+								<input 
+									type="number" 
+									bind:value={trickDisplayTime}
+									min="1"
+									max="10"
+									class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-center"
+								/>
+							</label>
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
 
 		<!-- Feedback Message -->
 		{#if feedbackMessage}
@@ -429,6 +653,21 @@
 					</button>
 				{:else}
 					<button 
+						onclick={startGame}
+						disabled={trickPhase !== 'setup'}
+						class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500"
+					>
+						Start Memory Game
+					</button>
+					{#if trickPhase === 'memory' || trickPhase === 'guessing'}
+						<button 
+							onclick={startNextSetOfTricks}
+							class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-700 transition-all shadow-lg"
+						>
+							Start the next set of tricks
+						</button>
+					{/if}
+					<button 
 						onclick={resetGame}
 						class="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all shadow-lg"
 					>
@@ -438,22 +677,24 @@
 			</div>
 		</div>
 
+		<!-- Game Instructions (visible before game starts) -->
+		{#if !gameStarted}
+			<div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+				<h3 class="text-lg font-semibold text-blue-800 mb-2">Game Instructions:</h3>
+				<ol class="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+					<li>Configure your game options using the settings below</li>
+					<li>Click "Start Memory Game" to begin the trick-based memory challenge</li>
+					<li>Watch as tricks are formed automatically with cards from each hand</li>
+					<li>After the specified number of tricks, memorize the cards played</li>
+					<li>Click cards in "All Possible Cards" to guess the cards from the tricks</li>
+					<li>Track your progress with the Found, Remaining, Attempted, and Incorrect counters</li>
+				</ol>
+			</div>
+		{/if}
+
 		<!-- Game Area -->
 		{#if gameStarted}
 			<div class="space-y-8">
-				<!-- Game Instructions -->
-				<div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-					<h3 class="text-lg font-semibold text-blue-800 mb-2">Game Instructions:</h3>
-					<ol class="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-						<li>Click cards in "Your Hand" to flip them face up (one at a time)</li>
-						<li>Click another card to flip the current card back face down and flip the new card</li>
-						<li>Click the same card again to flip it back face down</li>
-						<li>You must flip all cards in "Your Hand" at least once</li>
-						<li>After flipping the last card back face down, you can click cards in "All Possible Cards"</li>
-						<li>Each card can only be flipped once in "Your Hand"</li>
-					</ol>
-				</div>
-
 				<!-- Game Status -->
 				<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-6">
 					<div class="flex justify-between items-center mb-6">
@@ -466,18 +707,13 @@
 								{:else if allCardsFlippedOnce}
 									<span class="text-orange-600">🔄 Click the last card again to flip it face down</span>
 								{:else}
-									<span class="text-emerald-600">👆 Click cards in "Your Hand" to memorize them</span>
+									<!-- Initial instruction removed -->
 								{/if}
 							</div>
 						</div>
 						<div class="flex space-x-4">
 							{#if !gameCompleted}
-								<button 
-									onclick={resetGame}
-									class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-red-700 transition-all shadow-lg"
-								>
-									Reset Game
-								</button>
+								<!-- Reset Game button removed from instructions area -->
 							{/if}
 						</div>
 					</div>
@@ -498,42 +734,108 @@
 							</button>
 						</div>
 					{:else}
-						<!-- Four Hands Layout - Square arrangement -->
-						<div class="grid grid-cols-3 gap-4 max-w-6xl mx-auto">
-							<!-- Top Left - Hand 1 (North) -->
+						<!-- Four Hands Layout - Fixed positioning -->
+						<div class="grid grid-cols-3 gap-4 max-w-6xl mx-auto" style="grid-template-rows: auto auto 28.8rem auto;">
+							<!-- Top Left - Hand 1 (North) - Back to original position -->
 							<div class="col-start-2 row-start-1">
 								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">Dummy</h3>
 									<div class="space-y-2">
 										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
-											{@const suitCards = hand1Cards.filter(card => card.suit === suit)}
-											{#if suitCards.length > 0}
-												<div class="flex flex-wrap gap-1 justify-center">
-													{#each suitCards.sort((a, b) => {
-														const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
-														return rankOrder[b.rank] - rankOrder[a.rank];
-													}) as card}
-														{@const cardId = `${card.suit}-${card.rank}`}
-														{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
+											<div class="flex flex-wrap gap-1 justify-center">
+												{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
+													{@const cardId = `${suit}-${rank}`}
+													{@const card = {suit, rank}}
+													{@const isInHand = hand1Cards.some(c => c.suit === suit && c.rank === rank)}
+													{#if isInHand}
 														<Card 
 															card={card}
-															size="medium"
+															size="small"
 															bridgeTheme={true}
 															showBack={false}
-															flipped={isFlipped}
-															clickable={true}
-															onClick={() => handleCardClick(card.suit, card.rank)}
+															flipped={isCardFlipped(cardId)}
+															clickable={gameStarted && !gameCompleted}
+															onclick={createCardClickHandler(suit, rank)}
 														/>
-													{/each}
-												</div>
-											{/if}
+													{/if}
+												{/each}
+											</div>
 										{/each}
 									</div>
 								</div>
 							</div>
 
+							<!-- All Possible Cards - Moved to row 3 -->
+							<div class="col-start-2 row-start-3 flex items-end justify-center pt-[2.88rem]">
+								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full max-w-sm">
+									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">All Possible Cards</h3>
+									<div class="space-y-1 max-h-80 overflow-y-auto">
+										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
+											<div class="flex flex-wrap gap-1 justify-center">
+												{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
+													{@const cardId = `${suit}-${rank}`}
+													{@const isFlipped = isAllPossibleCardFlipped(cardId)}
+													{#if !isFlipped}
+														<button
+															onclick={() => handleAllPossibleCardsClick(suit, rank)}
+															class="px-2 py-1 text-xs font-semibold rounded border transition-all duration-150 min-w-[2rem] h-[1.8rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} hover:bg-gray-50 hover:shadow-lg"
+														>
+															{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
+														</button>
+													{:else}
+														<div class="px-2 py-1 text-xs font-semibold rounded border min-w-[2rem] h-[1.8rem] flex items-center justify-center {suit === 'hearts' || suit === 'diamonds' ? 'bg-red-100 border-red-400 text-red-800' : 'bg-gray-100 border-gray-400 text-gray-600'}">
+															{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
+														</div>
+													{/if}
+												{/each}
+											</div>
+										{/each}
+									</div>
+								</div>
+							</div>
+
+							<!-- New Container in Row 3, Column 2 - Just below All Possible Cards -->
+							<div class="col-start-2 row-start-3 flex items-start justify-center pt-4">
+								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-6 w-full max-w-sm min-h-[8.064rem] max-h-[12rem]">
+									<h3 class="text-lg font-bold mb-4 text-gray-800 text-center">Cards for current trick</h3>
+									<div class="space-y-4">
+										{#if currentTrick.length > 0}
+											<div class="flex flex-wrap gap-3 justify-center">
+												{#each currentTrick as cardId}
+													{@const [suit, rank] = cardId.split('-')}
+													{@const card = {suit, rank}}
+													<div class="transform scale-125">
+														<Card 
+															card={card}
+															size="small"
+															bridgeTheme={true}
+															showBack={false}
+															flipped={true}
+															clickable={false}
+														/>
+													</div>
+												{/each}
+											</div>
+										{:else}
+											<div class="text-center text-gray-500 text-sm">
+												<p>No cards in current trick</p>
+											</div>
+										{/if}
+										
+										<!-- Feedback Message -->
+										{#if feedbackMessage}
+											<div class="text-center mt-4">
+												<div class="text-lg font-medium {feedbackMessage.includes('Correct') ? 'text-green-600' : 'text-red-600'}">
+													{feedbackMessage}
+												</div>
+											</div>
+										{/if}
+									</div>
+								</div>
+							</div>
+
 							<!-- Left Middle - Hand 2 (West) -->
-							<div class="col-start-1 row-start-2">
+							<div class="col-start-1 row-start-3">
 								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">West Opponent</h3>
 									<div class="space-y-2">
@@ -565,7 +867,7 @@
 							</div>
 
 							<!-- Right Middle - Hand 3 (East) -->
-							<div class="col-start-3 row-start-2">
+							<div class="col-start-3 row-start-3">
 								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">East Opponent</h3>
 									<div class="space-y-2">
@@ -597,7 +899,7 @@
 							</div>
 
 							<!-- Bottom Middle - Hand 4 (South) -->
-							<div class="col-start-2 row-start-3">
+							<div class="col-start-2 row-start-5">
 								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">Declarer</h3>
 									<div class="space-y-2">
@@ -623,35 +925,6 @@
 													{/each}
 												</div>
 											{/if}
-										{/each}
-									</div>
-								</div>
-							</div>
-
-							<!-- Center - All Possible Cards -->
-							<div class="col-start-2 row-start-2 flex items-center justify-center">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full max-w-sm">
-									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">All Possible Cards</h3>
-									<div class="space-y-1 max-h-80 overflow-y-auto">
-										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
-											<div class="flex flex-wrap gap-1 justify-center">
-												{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
-													{@const cardId = `${suit}-${rank}`}
-													{@const isFlipped = isAllPossibleCardFlipped(cardId)}
-													{#if !isFlipped}
-														<button
-															onclick={() => handleAllPossibleCardsClick(suit, rank)}
-															class="px-2 py-1 text-xs font-semibold rounded border transition-all duration-150 min-w-[2rem] h-[1.8rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} hover:bg-gray-50 hover:shadow-lg"
-														>
-															{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
-														</button>
-													{:else}
-														<div class="px-2 py-1 text-xs font-semibold rounded border min-w-[2rem] h-[1.8rem] flex items-center justify-center {suit === 'hearts' || suit === 'diamonds' ? 'bg-red-100 border-red-400 text-red-800' : 'bg-gray-100 border-gray-400 text-gray-600'}">
-															{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
-														</div>
-													{/if}
-												{/each}
-											</div>
 										{/each}
 									</div>
 								</div>
