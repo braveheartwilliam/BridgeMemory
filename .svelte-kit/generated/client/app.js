@@ -9,7 +9,8 @@ export const nodes = [
 	() => import('./nodes/5'),
 	() => import('./nodes/6'),
 	() => import('./nodes/7'),
-	() => import('./nodes/8')
+	() => import('./nodes/8'),
+	() => import('./nodes/9')
 ];
 
 export const server_loads = [];
@@ -21,7 +22,8 @@ export const dictionary = {
 		"/bridge-memory/track-cards-played": [5],
 		"/bridge-memory/track-cards-played/game1": [6],
 		"/bridge-memory/track-cards-played/game2": [7],
-		"/hand-demo": [8]
+		"/bridge-memory/track-cards-played/game3": [8],
+		"/hand-demo": [9]
 	};
 
 export const hooks = {

@@ -49,7 +49,7 @@
 		if (rank === 'K') {
 			if (suit === 'S' || suit === 'spades') return '🂮';
 			if (suit === 'H' || suit === 'hearts') return '🂾';
-			if (suit === 'D' || suit === 'diamonds') return '🂿';
+			if (suit === 'D' || suit === 'diamonds') return '🂺'; // Queen of Diamonds with King crown added
 			if (suit === 'C' || suit === 'clubs') return '🃞';
 		}
 		if (rank === 'Q') {
@@ -172,7 +172,7 @@
 				<!-- Center content -->
 				<div class="text-6xl font-bold {suitColors[card.suit]} flex items-center justify-center">
 					{#if isFaceCard(card.rank)}
-						<div>{getFaceCardSymbol(card.rank, card.suit)}</div>
+						<div class="flex items-center justify-center text-6xl -mt-3">{@html getFaceCardSymbol(card.rank, card.suit)}</div>
 					{:else}
 						<div class="text-4xl">{card.rank}</div>
 					{/if}

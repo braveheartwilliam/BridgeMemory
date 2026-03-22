@@ -29,7 +29,7 @@ declare module "$app/types" {
 	type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 
 	export interface AppTypes {
-		RouteId(): "/" | "/anticipate-cards-remaining" | "/bridge-memory" | "/bridge-memory/track-cards-played" | "/bridge-memory/track-cards-played/game1" | "/bridge-memory/track-cards-played/game2" | "/hand-demo";
+		RouteId(): "/" | "/anticipate-cards-remaining" | "/bridge-memory" | "/bridge-memory/track-cards-played" | "/bridge-memory/track-cards-played/game1" | "/bridge-memory/track-cards-played/game2" | "/bridge-memory/track-cards-played/game3" | "/hand-demo";
 		RouteParams(): {
 			
 		};
@@ -40,9 +40,10 @@ declare module "$app/types" {
 			"/bridge-memory/track-cards-played": Record<string, never>;
 			"/bridge-memory/track-cards-played/game1": Record<string, never>;
 			"/bridge-memory/track-cards-played/game2": Record<string, never>;
+			"/bridge-memory/track-cards-played/game3": Record<string, never>;
 			"/hand-demo": Record<string, never>
 		};
-		Pathname(): "/" | "/anticipate-cards-remaining" | "/bridge-memory" | "/bridge-memory/track-cards-played" | "/bridge-memory/track-cards-played/game1" | "/bridge-memory/track-cards-played/game2" | "/hand-demo";
+		Pathname(): "/" | "/anticipate-cards-remaining" | "/bridge-memory" | "/bridge-memory/track-cards-played" | "/bridge-memory/track-cards-played/game1" | "/bridge-memory/track-cards-played/game2" | "/bridge-memory/track-cards-played/game3" | "/hand-demo";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/apple-touch-icon-precomposed.png" | "/apple-touch-icon.png" | "/favicon.ico" | "/favicon.png" | "/favicon.svg" | string & {};
 	}

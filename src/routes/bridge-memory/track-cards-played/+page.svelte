@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	let gameMode = $state<string>('manual');
+	let gameMode = $state<string>('full-hand');
 	let selectedPlayers = $state<string>('all');
 	let gameStarted = $state<boolean>(false);
 	let incorrectCount: number = 0;
@@ -58,10 +58,9 @@
 			if (gameMode === 'one-card') {
 				console.log('Navigating to Game 2 (One Card mode)');
 				goto('/bridge-memory/track-cards-played/game2?refresh=' + Date.now());
-			} else if (gameMode === 'manual') {
-				gameMode = 'manual';
-				console.log('Navigating to Game 1');
-				goto('/bridge-memory/track-cards-played/game1');
+			} else if (gameMode === 'played-card' && selectedPlayers === 'specific') {
+				console.log('Navigating to Game 3 (Four Hands - declarer and dummy face-up)');
+				goto('/bridge-memory/track-cards-played/game3');
 			} else {
 				console.log('Navigating to Game 1');
 				goto('/bridge-memory/track-cards-played/game1');
@@ -181,35 +180,48 @@
 					</div>
 				</div>
 
-				<!-- Player Selection -->
-				<div class="bg-white rounded-xl p-6 shadow-lg border border-teal-100 {gameMode === 'full-hand' ? 'opacity-50' : ''}">
-					<h3 class="text-lg font-semibold text-gray-800 mb-4 {gameMode === 'full-hand' ? 'text-gray-500' : ''}">Player Selection</h3>
+				<!-- Number of Hands -->
+				<div class="bg-white rounded-xl p-6 shadow-lg border border-teal-100 {gameMode === 'full-hand' || gameMode === 'one-card' ? 'opacity-50' : ''}">
+					<h3 class="text-lg font-semibold text-gray-800 mb-4 {gameMode === 'full-hand' || gameMode === 'one-card' ? 'text-gray-500' : ''}">Number of Hands</h3>
 					<div class="space-y-3">
-						<label class="flex items-center space-x-3 {gameMode === 'full-hand' ? 'cursor-not-allowed' : 'cursor-pointer'}">
+						<label class="flex items-center space-x-3 {gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card' ? 'cursor-not-allowed' : 'cursor-pointer'}">
 							<input 
 								type="radio" 
 								name="players" 
 								value="all" 
 								bind:group={selectedPlayers}
-								disabled={gameMode === 'full-hand'}
-								class="w-4 h-4 text-teal-600 focus:ring-teal-500 {gameMode === 'full-hand' ? 'opacity-50 cursor-not-allowed' : ''}"
+								disabled={gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card'}
+								class="w-4 h-4 text-teal-600 focus:ring-teal-500 {gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card' ? 'opacity-50 cursor-not-allowed' : ''}"
 							/>
-							<span class="text-gray-700 {gameMode === 'full-hand' ? 'text-gray-500' : ''}">All Players</span>
+							<span class="text-gray-700 {gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card' ? 'text-gray-500' : ''}">One Hand</span>
 						</label>
-						<label class="flex items-center space-x-3 {gameMode === 'full-hand' ? 'cursor-not-allowed' : 'cursor-pointer'}">
+						<label class="flex items-center space-x-3 {gameMode === 'full-hand' || gameMode === 'one-card' ? 'cursor-not-allowed' : 'cursor-pointer'}">
 							<input 
 								type="radio" 
 								name="players" 
 								value="specific" 
 								bind:group={selectedPlayers}
-								disabled={gameMode === 'full-hand'}
-								class="w-4 h-4 text-teal-600 focus:ring-teal-500 {gameMode === 'full-hand' ? 'opacity-50 cursor-not-allowed' : ''}"
+								disabled={gameMode === 'full-hand' || gameMode === 'one-card'}
+								class="w-4 h-4 text-teal-600 focus:ring-teal-500 {gameMode === 'full-hand' || gameMode === 'one-card' ? 'opacity-50 cursor-not-allowed' : ''}"
 							/>
-							<span class="text-gray-700 {gameMode === 'full-hand' ? 'text-gray-500' : ''}">Specific Player</span>
+							<span class="text-gray-700 {gameMode === 'full-hand' || gameMode === 'one-card' ? 'text-gray-500' : ''}">Four Hands (declarer and dummy face-up)</span>
+						</label>
+						<label class="flex items-center space-x-3 {gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card' ? 'cursor-not-allowed' : 'cursor-pointer'}">
+							<input 
+								type="radio" 
+								name="players" 
+								value="full-hand" 
+								bind:group={selectedPlayers}
+								disabled={gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card'}
+								class="w-4 h-4 text-teal-600 focus:ring-teal-500 {gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card' ? 'opacity-50 cursor-not-allowed' : ''}"
+							/>
+							<span class="text-gray-700 {gameMode === 'full-hand' || gameMode === 'one-card' || gameMode === 'played-card' ? 'text-gray-500' : ''}">Four Hands (one defender face up)</span>
 						</label>
 					</div>
-					{#if gameMode === 'full-hand'}
-						<p class="text-sm text-gray-500 mt-3 italic">Player selection is not available for Game Mode 1. This mode shows all cards simultaneously.</p>
+					{#if gameMode === 'full-hand' || gameMode === 'one-card'}
+						<p class="text-sm text-gray-500 mt-3 italic">Number of Hands selection is not available for Game Mode 1 and Game Mode 2. These modes show all cards simultaneously.</p>
+					{:else if gameMode === 'played-card'}
+						<p class="text-sm text-gray-500 mt-3 italic">Only "Four Hands (declarer and dummy face-up)" is currently implemented for Game Mode 3. Other options will be available soon.</p>
 					{/if}
 				</div>
 			</div>
