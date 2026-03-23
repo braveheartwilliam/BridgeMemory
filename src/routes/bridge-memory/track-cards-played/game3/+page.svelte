@@ -520,7 +520,7 @@
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-8">
-	<div class="max-w-6xl mx-auto">
+	<div class="w-full mx-auto">
 		<!-- Breadcrumb Navigation -->
 		<nav class="mb-6">
 			<ol class="flex items-center space-x-2 text-sm text-gray-600">
@@ -632,15 +632,7 @@
 			</div>
 		{/if}
 
-		<!-- Feedback Message -->
-		{#if feedbackMessage}
-			<div class="bg-white rounded-xl shadow-lg p-4 mb-6 text-center">
-				<div class="text-lg font-medium {feedbackMessage.includes('Correct') ? 'text-green-600' : 'text-red-600'}">
-					{feedbackMessage}
-				</div>
-			</div>
-		{/if}
-
+		
 		<!-- Game Controls -->
 		<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
 			<div class="flex flex-wrap gap-4 justify-center">
@@ -712,10 +704,7 @@
 							</div>
 						</div>
 						<div class="flex space-x-4">
-							{#if !gameCompleted}
-								<!-- Reset Game button removed from instructions area -->
-							{/if}
-						</div>
+													</div>
 					</div>
 
 					{#if gameCompleted}
@@ -735,10 +724,10 @@
 						</div>
 					{:else}
 						<!-- Four Hands Layout - Fixed positioning -->
-						<div class="grid grid-cols-3 gap-4 max-w-6xl mx-auto" style="grid-template-rows: auto auto 28.8rem auto;">
+						<div class="grid grid-cols-3 gap-6 w-full mx-auto" style="grid-template-rows: auto auto 28.8rem auto;">
 							<!-- Top Left - Hand 1 (North) - Back to original position -->
 							<div class="col-start-2 row-start-1">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
+								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">Dummy</h3>
 									<div class="space-y-2">
 										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
@@ -750,7 +739,7 @@
 													{#if isInHand}
 														<Card 
 															card={card}
-															size="small"
+															size="medium"
 															bridgeTheme={true}
 															showBack={false}
 															flipped={isCardFlipped(cardId)}
@@ -765,78 +754,77 @@
 								</div>
 							</div>
 
-							<!-- All Possible Cards - Moved to row 3 -->
-							<div class="col-start-2 row-start-3 flex items-end justify-center pt-[2.88rem]">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full max-w-sm">
-									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">All Possible Cards</h3>
-									<div class="space-y-1 max-h-80 overflow-y-auto">
-										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
-											<div class="flex flex-wrap gap-1 justify-center">
-												{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
-													{@const cardId = `${suit}-${rank}`}
-													{@const isFlipped = isAllPossibleCardFlipped(cardId)}
-													{#if !isFlipped}
-														<button
-															onclick={() => handleAllPossibleCardsClick(suit, rank)}
-															class="px-2 py-1 text-xs font-semibold rounded border transition-all duration-150 min-w-[2rem] h-[1.8rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} hover:bg-gray-50 hover:shadow-lg"
-														>
-															{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
-														</button>
-													{:else}
-														<div class="px-2 py-1 text-xs font-semibold rounded border min-w-[2rem] h-[1.8rem] flex items-center justify-center {suit === 'hearts' || suit === 'diamonds' ? 'bg-red-100 border-red-400 text-red-800' : 'bg-gray-100 border-gray-400 text-gray-600'}">
-															{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
+							<!-- Flex container for vertical stacking in Row 3 -->
+							<div class="col-start-2 row-start-3 flex flex-col justify-between h-full">
+								<!-- Cards for current trick - Top -->
+								<div class="flex justify-center">
+									<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-6 w-full pt-2">
+										<h3 class="text-lg font-bold mb-4 text-gray-800 text-center">Cards for current trick</h3>
+										<div class="space-y-4 h-20">
+											{#if currentTrick.length > 0}
+												<div class="flex flex-wrap gap-3 justify-center">
+													{#each currentTrick as cardId}
+														{@const [suit, rank] = cardId.split('-')}
+														{@const card = {suit, rank}}
+														<div class="transform scale-110">
+															<Card 
+																card={card}
+																size="medium"
+																bridgeTheme={true}
+																showBack={false}
+																flipped={true}
+																clickable={false}
+															/>
 														</div>
+													{/each}
+												</div>
+											{:else}
+												<div class="text-center text-gray-500 text-sm h-20 flex items-center justify-center">
+													{#if feedbackMessage}
+														<div class="text-lg font-medium {feedbackMessage.includes('Correct') ? 'text-green-600' : 'text-red-600'}">
+															{feedbackMessage}
+														</div>
+													{:else}
+														<p>No cards in current trick</p>
 													{/if}
-												{/each}
-											</div>
-										{/each}
+												</div>
+											{/if}
+										</div>	
 									</div>
 								</div>
-							</div>
-
-							<!-- New Container in Row 3, Column 2 - Just below All Possible Cards -->
-							<div class="col-start-2 row-start-3 flex items-start justify-center pt-4">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-6 w-full max-w-sm min-h-[8.064rem] max-h-[12rem]">
-									<h3 class="text-lg font-bold mb-4 text-gray-800 text-center">Cards for current trick</h3>
-									<div class="space-y-4">
-										{#if currentTrick.length > 0}
-											<div class="flex flex-wrap gap-3 justify-center">
-												{#each currentTrick as cardId}
-													{@const [suit, rank] = cardId.split('-')}
-													{@const card = {suit, rank}}
-													<div class="transform scale-125">
-														<Card 
-															card={card}
-															size="small"
-															bridgeTheme={true}
-															showBack={false}
-															flipped={true}
-															clickable={false}
-														/>
-													</div>
-												{/each}
-											</div>
-										{:else}
-											<div class="text-center text-gray-500 text-sm">
-												<p>No cards in current trick</p>
-											</div>
-										{/if}
-										
-										<!-- Feedback Message -->
-										{#if feedbackMessage}
-											<div class="text-center mt-4">
-												<div class="text-lg font-medium {feedbackMessage.includes('Correct') ? 'text-green-600' : 'text-red-600'}">
-													{feedbackMessage}
+								<!-- All Possible Cards - Bottom -->
+								<div class="flex justify-center mt-4">
+									<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full">
+										<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">All Possible Cards</h3>
+										<div class="space-y-1 max-h-80 overflow-y-auto">
+											{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
+												<div class="flex flex-wrap gap-1 justify-center">
+													{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
+														{@const cardId = `${suit}-${rank}`}
+														{@const isFlipped = isAllPossibleCardFlipped(cardId)}
+														{#if !isFlipped}
+															<button
+																onclick={() => handleAllPossibleCardsClick(suit, rank)}
+																class="px-2 py-1 text-xs font-semibold rounded border transition-all duration-150 min-w-[2rem] h-[1.8rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} hover:bg-gray-50 hover:shadow-lg"
+															>
+																{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
+															</button>
+														{:else}
+															<div class="px-2 py-1 text-xs font-semibold rounded border min-w-[2rem] h-[1.8rem] flex items-center justify-center {suit === 'hearts' || suit === 'diamonds' ? 'bg-red-100 border-red-400 text-red-800' : 'bg-gray-100 border-gray-400 text-gray-600'}">
+																{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
+															</div>
+														{/if}
+													{/each}
 												</div>
-											</div>
-										{/if}
+											{/each}
+										</div>
 									</div>
 								</div>
 							</div>
 
 							<!-- Left Middle - Hand 2 (West) -->
 							<div class="col-start-1 row-start-3">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
+								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">West Opponent</h3>
 									<div class="space-y-2">
 										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
@@ -855,8 +843,7 @@
 															bridgeTheme={true}
 															showBack={false}
 															flipped={isFlipped}
-															clickable={true}
-															onClick={() => handleCardClick(card.suit, card.rank)}
+															clickable={false}
 														/>
 													{/each}
 												</div>
@@ -868,7 +855,7 @@
 
 							<!-- Right Middle - Hand 3 (East) -->
 							<div class="col-start-3 row-start-3">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
+								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">East Opponent</h3>
 									<div class="space-y-2">
 										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
@@ -887,8 +874,7 @@
 															bridgeTheme={true}
 															showBack={false}
 															flipped={isFlipped}
-															clickable={true}
-															onClick={() => handleCardClick(card.suit, card.rank)}
+															clickable={false}
 														/>
 													{/each}
 												</div>
@@ -898,9 +884,9 @@
 								</div>
 							</div>
 
-							<!-- Bottom Middle - Hand 4 (South) -->
-							<div class="col-start-2 row-start-5">
-								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4">
+							<!-- Bottom - Hand 4 (South/Declarer) -->
+							<div class="col-start-2 row-start-4">
+								<div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-emerald-100 p-4 w-full">
 									<h3 class="text-lg font-bold mb-3 text-gray-800 text-center">Declarer</h3>
 									<div class="space-y-2">
 										{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
@@ -919,8 +905,7 @@
 															bridgeTheme={true}
 															showBack={false}
 															flipped={isFlipped}
-															clickable={true}
-															onClick={() => handleCardClick(card.suit, card.rank)}
+															clickable={false}
 														/>
 													{/each}
 												</div>

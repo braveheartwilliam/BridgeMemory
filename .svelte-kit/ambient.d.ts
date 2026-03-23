@@ -39,7 +39,6 @@
  */
 declare module '$env/static/private' {
 	export const NVM_INC: string;
-	export const export: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
 	export const INIT_CWD: string;
@@ -51,10 +50,11 @@ declare module '$env/static/private' {
 	export const TMPDIR: string;
 	export const npm_config_global_prefix: string;
 	export const CONDA_SHLVL: string;
+	export const VSCODE_PYTHON_AUTOACTIVATE_GUARD: string;
 	export const TERM_PROGRAM_VERSION: string;
 	export const CONDA_PROMPT_MODIFIER: string;
 	export const GSETTINGS_SCHEMA_DIR_CONDA_BACKUP: string;
-	export const WINDSURF_CASCADE_TERMINAL: string;
+	export const ZDOTDIR: string;
 	export const MallocNanoZone: string;
 	export const COLOR: string;
 	export const npm_config_noproxy: string;
@@ -66,8 +66,8 @@ declare module '$env/static/private' {
 	export const COMMAND_MODE: string;
 	export const npm_config_globalconfig: string;
 	export const CONDA_EXE: string;
-	export const WINDSURF_USE_CASCADE_SANDBOX: string;
 	export const SSH_AUTH_SOCK: string;
+	export const VSCODE_PROFILE_INITIALIZED: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
 	export const PAGER: string;
@@ -78,20 +78,19 @@ declare module '$env/static/private' {
 	export const npm_package_json: string;
 	export const _: string;
 	export const BRAVE_API_KEY: string;
+	export const LaunchInstanceID: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
+	export const USER_ZDOTDIR: string;
 	export const CONDA_PREFIX: string;
 	export const __CFBundleIdentifier: string;
 	export const npm_command: string;
 	export const PWD: string;
-	export const VSCODE_NONCE: string;
-	export const DISABLE_AUTO_UPDATE: string;
 	export const npm_lifecycle_event: string;
 	export const PERPLEXITY_API_KEY: string;
 	export const EDITOR: string;
 	export const npm_package_name: string;
 	export const LANG: string;
-	export const WINDSURF_CASCADE_TERMINAL_KIND: string;
 	export const npm_config_npm_version: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 	export const XPC_FLAGS: string;
@@ -99,6 +98,7 @@ declare module '$env/static/private' {
 	export const npm_package_version: string;
 	export const _CE_M: string;
 	export const XPC_SERVICE_NAME: string;
+	export const VSCODE_INJECTION: string;
 	export const SHLVL: string;
 	export const HOME: string;
 	export const VSCODE_GIT_ASKPASS_MAIN: string;
@@ -118,8 +118,7 @@ declare module '$env/static/private' {
 	export const GIT_ASKPASS: string;
 	export const INFOPATH: string;
 	export const HOMEBREW_CELLAR: string;
-	export const GIT_PAGER: string;
-	export const WINDSURF_CASCADE_TERMINAL_ID: string;
+	export const SECURITYSESSIONID: string;
 	export const npm_node_execpath: string;
 	export const npm_config_prefix: string;
 	export const COLORTERM: string;
@@ -211,7 +210,6 @@ declare module '$env/static/public' {
 declare module '$env/dynamic/private' {
 	export const env: {
 		NVM_INC: string;
-		export: string;
 		TERM_PROGRAM: string;
 		NODE: string;
 		INIT_CWD: string;
@@ -223,10 +221,11 @@ declare module '$env/dynamic/private' {
 		TMPDIR: string;
 		npm_config_global_prefix: string;
 		CONDA_SHLVL: string;
+		VSCODE_PYTHON_AUTOACTIVATE_GUARD: string;
 		TERM_PROGRAM_VERSION: string;
 		CONDA_PROMPT_MODIFIER: string;
 		GSETTINGS_SCHEMA_DIR_CONDA_BACKUP: string;
-		WINDSURF_CASCADE_TERMINAL: string;
+		ZDOTDIR: string;
 		MallocNanoZone: string;
 		COLOR: string;
 		npm_config_noproxy: string;
@@ -238,8 +237,8 @@ declare module '$env/dynamic/private' {
 		COMMAND_MODE: string;
 		npm_config_globalconfig: string;
 		CONDA_EXE: string;
-		WINDSURF_USE_CASCADE_SANDBOX: string;
 		SSH_AUTH_SOCK: string;
+		VSCODE_PROFILE_INITIALIZED: string;
 		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
 		PAGER: string;
@@ -250,20 +249,19 @@ declare module '$env/dynamic/private' {
 		npm_package_json: string;
 		_: string;
 		BRAVE_API_KEY: string;
+		LaunchInstanceID: string;
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
+		USER_ZDOTDIR: string;
 		CONDA_PREFIX: string;
 		__CFBundleIdentifier: string;
 		npm_command: string;
 		PWD: string;
-		VSCODE_NONCE: string;
-		DISABLE_AUTO_UPDATE: string;
 		npm_lifecycle_event: string;
 		PERPLEXITY_API_KEY: string;
 		EDITOR: string;
 		npm_package_name: string;
 		LANG: string;
-		WINDSURF_CASCADE_TERMINAL_KIND: string;
 		npm_config_npm_version: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 		XPC_FLAGS: string;
@@ -271,6 +269,7 @@ declare module '$env/dynamic/private' {
 		npm_package_version: string;
 		_CE_M: string;
 		XPC_SERVICE_NAME: string;
+		VSCODE_INJECTION: string;
 		SHLVL: string;
 		HOME: string;
 		VSCODE_GIT_ASKPASS_MAIN: string;
@@ -290,8 +289,7 @@ declare module '$env/dynamic/private' {
 		GIT_ASKPASS: string;
 		INFOPATH: string;
 		HOMEBREW_CELLAR: string;
-		GIT_PAGER: string;
-		WINDSURF_CASCADE_TERMINAL_ID: string;
+		SECURITYSESSIONID: string;
 		npm_node_execpath: string;
 		npm_config_prefix: string;
 		COLORTERM: string;
