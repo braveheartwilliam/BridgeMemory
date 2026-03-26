@@ -1,15 +1,24 @@
 import type { GameState, Card, Player, Rank } from '$lib/types/bridge';
-import { createDeck, shuffleDeck, dealCards } from './deck';
+import { createDeck, dealCardsWithValidation } from './deck';
 
 export function initializeGame(): GameState {
 	const deck = createDeck();
-	const shuffled = shuffleDeck(deck);
-	const hands = dealCards(shuffled);
+	const { hands, validation, attempts } = dealCardsWithValidation(deck);
+	
+	// Log validation results for debugging
+	console.log('Deal validation:', {
+		isValid: validation.isValid,
+		attempts,
+		declarerPoints: validation.declarerPoints,
+		dummyPoints: validation.dummyPoints,
+		totalPoints: validation.totalPoints,
+		errors: validation.errors
+	});
 	
 	const players: Player[] = [
-		{ id: 0, name: 'North', hand: hands[0], isHuman: false },
+		{ id: 0, name: 'North', hand: hands[0], isHuman: false }, // Dummy
 		{ id: 1, name: 'East', hand: hands[1], isHuman: false },
-		{ id: 2, name: 'South', hand: hands[2], isHuman: true },
+		{ id: 2, name: 'South', hand: hands[2], isHuman: true },  // Declarer
 		{ id: 3, name: 'West', hand: hands[3], isHuman: false }
 	];
 	
@@ -21,7 +30,8 @@ export function initializeGame(): GameState {
 		trickNumber: 1,
 		deck: [],
 		playedCards: [],
-		isGameOver: false
+		isGameOver: false,
+		validation
 	};
 }
 

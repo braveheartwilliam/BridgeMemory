@@ -142,9 +142,9 @@
 													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
 														Available Now
 													</span>
-												{:else if app.status === 'coming-soon'}
+												{:else if app.status === 'coming-soon' && app.title === 'Bridge Play Analysis'}
 													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-														Coming Soon
+														Under Development
 													</span>
 												{:else}
 													<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -170,6 +170,13 @@
 							
 							<div class="flex items-center justify-between">
 								{#if app.status === 'available'}
+									<button 
+										onclick={() => navigateToApp(app.route)}
+										class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+									>
+										Launch Application
+									</button>
+								{:else if app.status === 'coming-soon' && app.title === 'Bridge Play Analysis'}
 									<button 
 										onclick={() => navigateToApp(app.route)}
 										class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"

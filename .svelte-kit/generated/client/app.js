@@ -10,7 +10,9 @@ export const nodes = [
 	() => import('./nodes/6'),
 	() => import('./nodes/7'),
 	() => import('./nodes/8'),
-	() => import('./nodes/9')
+	() => import('./nodes/9'),
+	() => import('./nodes/10'),
+	() => import('./nodes/11')
 ];
 
 export const server_loads = [];
@@ -18,12 +20,14 @@ export const server_loads = [];
 export const dictionary = {
 		"/": [2],
 		"/anticipate-cards-remaining": [3],
-		"/bridge-memory": [4],
-		"/bridge-memory/track-cards-played": [5],
-		"/bridge-memory/track-cards-played/game1": [6],
-		"/bridge-memory/track-cards-played/game2": [7],
-		"/bridge-memory/track-cards-played/game3": [8],
-		"/hand-demo": [9]
+		"/bridge-analysis": [4],
+		"/bridge-analysis/capture-missing-trump": [5],
+		"/bridge-memory": [6],
+		"/bridge-memory/track-cards-played": [7],
+		"/bridge-memory/track-cards-played/game1": [8],
+		"/bridge-memory/track-cards-played/game2": [9],
+		"/bridge-memory/track-cards-played/game3": [10],
+		"/hand-demo": [11]
 	};
 
 export const hooks = {

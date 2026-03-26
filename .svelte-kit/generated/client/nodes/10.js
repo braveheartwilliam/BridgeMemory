@@ -1,1 +1,1 @@
-export { default as component } from "../../../../src/routes/track-cards-played/game1/+page.svelte";
+export { default as component } from "../../../../src/routes/bridge-memory/track-cards-played/game3/+page.svelte";

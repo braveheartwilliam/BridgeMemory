@@ -6,6 +6,16 @@ export interface Card {
 	rank: Rank;
 }
 
+export interface CardComponentProps {
+	card: Card;
+	size?: 'small' | 'medium' | 'large';
+	clickable?: boolean;
+	onClick?: (card: Card) => void;
+	flipped?: boolean;
+	bridgeTheme?: boolean;
+	showBack?: boolean; // Added for Bridge Play Analysis
+}
+
 export interface Player {
 	id: number;
 	name: string;
@@ -22,6 +32,13 @@ export interface GameState {
 	deck: Card[];
 	playedCards: Card[];
 	isGameOver: boolean;
+	validation?: {
+		isValid: boolean;
+		declarerPoints: number;
+		dummyPoints: number;
+		totalPoints: number;
+		errors: string[];
+	};
 }
 
 export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';

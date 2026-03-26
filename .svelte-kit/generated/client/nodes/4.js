@@ -1,1 +1,1 @@
-export { default as component } from "../../../../src/routes/bridge-memory/+page.svelte";
+export { default as component } from "../../../../src/routes/bridge-analysis/+page.svelte";

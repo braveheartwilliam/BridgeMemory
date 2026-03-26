@@ -1,0 +1,204 @@
+# Bridge Rules of Play
+
+The following specifies the rule of play for Bridge:
+
+Each player is dealt 13 cards from a 52-card deck.
+
+For bpa-1, the rule of play is as follows:
+
+The Declarer always owns the "contract" for each hand. The contract specifies the trump suit and the number of tricks the Declarer must take. The contract is always 4 hearts. Thus, in order to win, the Declarer must take at least 10 tricks.
+
+A trick is 4 cards, one from each player. A trick is won by the player who plays the highest card of the suit led, or the highest trump card if one is played. A counter will be maintained to track the number of tricks won by the Declarer. The counter will be incremented after each trick is completed. There are 13 possible tricks in a hand. At the beginning of each hand, the counter will be reset to 0. At the end of each hand, the counter will be checked to see if it equals 10. If the counter equals 10, the Declarer has won the hand. If the counter does not equal 10, the Declarer has lost the hand. The game continues until all 13 tricks have been played.
+
+The "West Opponent" leads the first card of the first trick. The West Opponent's card should be the top of a sequence (example: if a suit has king, queen, jack, lead the king) or, the 4th highest ranking card in a suit of 4 or more cards or a suit that has one card and it is an ace or a suit that has two cards. The suit of the card led should NOT be a heart.
+
+Play of cards for each trick proceeds clockwise from the player who led the first card of the first trick. (West → Dummy → East → Declarer - if West leads the first card for example).
+
+
+- Aces = 4 points
+- Kings = 3 points
+- Queens = 2 points
+- Jacks = 1 point
+
+### Declarer Requirements
+
+- Declarer must have at least 12 points but less than 20 points.
+- Declarer MUST always have at least 5 trump (hearts) cards
+- Declarer earns 1 point extra for each card more than 5 in the trump suit (hearts)
+
+### Dummy Point Calculation
+
+- Dummy earns base points from face cards (same as Declarer: A=4, K=3, Q=2, J=1)
+- Dummy earns additional points for shortages in suits OTHER THAN TRUMP (HEARTS)
+
+  - 2 cards in a suit = 1 point
+  - 1 card in a suit = 3 points
+  - 0 cards in a suit (void) = 5 points
+
+### Partnership Requirements
+
+- Declarer points + Dummy points must add to at least 23 AND no more than 28
+
+## Trick Play
+
+### Suit Following Rules (CRITICAL)
+
+**ALL PLAYERS must follow suit if they have cards in the suit led:**
+
+- **If a player has cards in the suit led**: MUST play a card of that suit
+- **If a player has NO cards in the suit led**: May play any card (including trump)
+- **Manual Play Enforcement**: Declarer and Dummy CANNOT play cards that are not in the suit led if they have cards in that suit
+
+**Trump (Hearts) Playing Rules:**
+
+Trump cards (hearts) may ONLY be played in these situations:
+
+1. **Trump is led** - If hearts is the suit led, then hearts must be played by players who have hearts
+2. **Player cannot follow suit** - If a player has NO cards in the suit led, they may play a heart (trump)
+
+**Trump Playing Restrictions:**
+
+- **Cannot lead hearts** - West opponent is never allowed to lead with hearts (trump)
+- **Cannot play hearts out of turn** - Hearts cannot be played if the player has cards in the suit led
+- **Must follow suit first** - Trump is a last resort when unable to follow the led suit
+
+### Trick Winning Rules
+
+- Highest card of the suit led wins the trick
+- If no trump is played, the highest card of the led suit wins
+- If trump is played, the highest trump card wins the trick
+- Players must follow suit if possible
+
+### Lead Card Rules
+
+- West opponent always leads the first card
+- Winner of the previous trick leads the next trick
+- Lead can be any card from the player's hand
+
+### Counter System
+
+- Tricks won by Declarer/Dummy partnership increase their counter
+- Tricks won by opponents increase their counter
+- Game tracks total tricks won by each side
+
+## Point Calculation Summary
+
+### Declarer Points
+
+- Face card points (A=4, K=3, Q=2, J=1)
+- Trump length bonus (1 point per heart beyond 5)
+
+### Dummy Points
+
+- Face card points (A=4, K=3, Q=2, J=1)
+
+- Suit Shortage Points (non-trump suits only)
+
+  - Void (0 cards) = 5 points
+  - Singleton (1 card) = 3 points
+  - Doubleton (2 cards) = 1 point
+  - 3+ cards = 0 points
+
+### Partnership Validation
+
+- Total points must be between 23-28
+- Declarer must have at least 5 hearts
+- Both players must have exactly 13 cards each
+
+## Implementation Suggestions
+
+Implementation Suggestions:
+AI Opponent Logic:
+Beginner level - Random valid plays
+Intermediate level - Basic strategy (hold trump, try to win tricks)
+Advanced level - Complex counting and signaling
+
+Difficulty Progression:
+Level 1 - Opponents play randomly
+Level 2 - Opponents use basic strategy
+Level 3 - Opponents use advanced defense --- IMPLEMENT ALL "IMPLEMENTATION SUGGESTIONS" AND ADD OPTIONS TO THE INITIAL BPA-1 DISPLAY FOR GAME PLAYER TO CHOOSE OPTIONS.
+
+The following specifies the rule of play for Bridge:
+
+Each player is dealt 13 cards from a 52-card deck.
+
+For bpa-1, the rule of play is as follows:
+
+The Declarer always owns the "contract" for each hand. The contract specifies the trump suit and the number of tricks the Declarer must take. The contract is always 4 hearts. Thus, in order to win, the Declarer must take at least 10 tricks.
+
+A trick is 4 cards, one from each player. A trick is won by the player who plays the highest card of the suit led, or the highest trump card if one is played. A counter will be maintained to track the number of tricks won by the Declarer. The counter will be incremented after each trick is completed. There are 13 possible tricks in a hand. At the beginning of each hand, the counter will be reset to 0. At the end of each hand, the counter will be checked to see if it equals 10. If the counter equals 10, the Declarer has won the hand. If the counter does not equal 10, the Declarer has lost the hand. The game continues until all 13 tricks have been played.
+
+The "West Opponent" leads the first card of the first trick. The West Opponent's card should be the top of a sequence (example: if a suit has king, queen, jack, lead the king) or, the 4th highest ranking card in a suit of 4 or more cards or a suit that has one card and it is an ace or a suit that has two cards. The suit of the card led should NOT be a heart.
+
+Play of cards for each trick proceeds clockwise from the player who led the first card of the first trick. (West → Dummy → East → Declarer - if West leads the first card for example).
+
+The player who wins a trick leads the first card of the next trick. Each player must follow the suit led if able. If a player cannot follow the suit led, they may play any card, including a trump card.
+
+If an opponent (West Opponent or East Opponent) player can follow the suit led (they have cards with that suit), they choose the card to be played as follows:
+
+- if Declarer or Dummy led the card, the first opponent to play (e.g. West Opponent if Declarer led the first card of the trick) plays the lowest card of the suit led; if they are the fourth player to play, they play the highest card of the suit led but no higher than necessary to win the trick.
+
+If a player cannot follow the suit led, they may play any card, including a trump card. If a player cannot follow the suit led and cannot play a trump card, they may play any card.
+
+Opponents (West Opponent or East Opponent) may randomly select either the highest or lowest card if a trump suit is led (Hearts for bpa-1)
+
+If a trump (Hearts) was not let, Opponents don't have any cards in the non-trump suit, and they have trump they can randomly choose a high or low ranked trump card.
+
+If the first Opponent to play did play a trump card, the second Opponent to play will only play a higher trump card if the Declarer/Dummy just before in play of the trick has played a higher trump card than the first Opponent played. Then, if the second Opponent to play must play a higher trump card than Declarer/Dummy IF the second Opponent has any trump cards, and can't follow suit.
+
+The opponents, as a team, must always attempt to win a trick by playing the highest ranked card possible - notwithstanding the rules set forth in this document.
+
+If a player plays a trump card, they must play the highest trump card if they can. If a player cannot play a trump card, they may play any card. If a player plays a card that is not the highest card of the suit led, they are said to have "undercut" the suit. If a player undercuts the suit led, the player who wins the trick is the player who played the highest card of the suit led. If a player plays a trump card that is not the highest trump card, they are said to have "undercut" the trump suit. If a player undercuts the suit or trump suit, the player who wins the trick is the player who played the highest card of the suit or trump suit.
+Level 3 - Opponents use advanced defense
+
+=== CLARIFIED RULES ===
+
+Card Selection Logic:
+West leading strategy - Should West always lead highest non-heart card, or vary based on hand strength? LEAD HIGHEST NON-HEART CARD
+Opponent decision making - When opponents have choice between high/low cards, should they consider Declarer/Dummy cards already played? YES, FIRST OPPONENT PLAYS LOWEST, SECOND PLAYS ONLY AS HIGH AS NEEDED
+Trump usage - Should opponents save trump cards for key moments or play them opportunistically? RANDOMLY CHOOSE TO PLAY OR SAVE
+Following suit - When opponents can't follow suit, should they prefer trump over discarding? RANDOMLY CHOOSE
+
+Observations for Improvements:
+Potential Ambiguities:
+"4th highest ranking card" - What if suit has exactly 3 cards? Should they lead 3rd highest? YES IF IT IS THE LONGEST SUIT AND NO SEQUENCES, SINGLE NON-TRUMP CARDS
+"Highest card of suit led" - Does this include cards already played in current trick, or only remaining in hand? CARDS ALREADY PLAYED
+"Undercut" terminology - This usually means playing a lower trump when a higher trump could win. Your definition seems different. HMM THINK OTHER RULES COVER THIS ABOVE
+
+Missing Rules:
+Void suits - What happens when a player has no cards in led suit AND no trumps? RANDOMLY SELECT A LOW RANKED CARD FROM LONGEST SUIT
+Trump breaking - When should opponents be forced to play trump vs. having choice? NEVER
+Signal cards - Should high cards played early count as signals to partners? NOT FOR BPA-1 GAME
+Revoke penalties - What happens if someone fails to follow suit when able? REVOKING NOT ALLOWED AND APP MUST ENFORCE FOR DECLARER/DUMMY BY NOT ALLOWING CARDS THAT WOULD BE REVOKE TO BE PLAYED
+Lead restrictions - Should West ever be allowed to lead hearts (trump)? NO
+Trick completion - Immediate clearing vs. delayed clearing timing - DELAYED CLEARING (8 SECONDS)
+Scoring variations - What happens if Declarer wins exactly 10 vs. more than 10 tricks? NOTHING
+
+Additional Bridge Rules to Consider:
+Advanced Concepts:
+Finesse plays - When opponents should try to finesse against Declarer's high cards YES
+Counting cards - Basic card counting to infer Declarer's holdings - YES
+Safety plays - When opponents should play safe vs. aggressive -- ALWAYS AGGRESSIVE
+Partnership play - How West/East should coordinate as defenders. CAN'T RESPOND AT THIS TIME
+Specific Scenarios:
+Cross-trump finesse - When to play low trump to force higher trump ??
+Uppercut situations - When to play higher trump over opponent's trump - AS SECOND OPPONENT TO PLAY
+Suit establishment - When to play high cards to force out winners - AS SECOND OPPONENT TO PLAY
+Dummy management - How Declarer should use Dummy's cards. GAME PLAYER CHOOSES BOTH DECLARER AND DUMMY CARDS BY CLICKING THEM
+Technical Rules:
+Revoke penalties - What happens if someone fails to follow suit when able? REVOKING NOT ALLOWED AND APP MUST ENFORCE FOR DECLARER/DUMMY BY NOT ALLOWING CARDS THAT WOULD BE REVOKE TO BE PLAYED
+Lead restrictions - Should West ever be allowed to lead hearts (trump)? NO
+Trick completion - Immediate clearing vs. delayed clearing timing - DELAYED CLEARING (8 SECONDS)
+Scoring variations - What happens if Declarer wins exactly 10 vs. more than 10 tricks? NOTHING
+
+Implementation Suggestions:
+AI Opponent Logic:
+Beginner level - Random valid plays
+Intermediate level - Basic strategy (hold trump, try to win tricks)
+Advanced level - Complex counting and signaling
+
+Difficulty Progression:
+Level 1 - Opponents play randomly
+Level 2 - Opponents use basic strategy
+Level 3 - Opponents use advanced defense --- IMPLEMENT ALL "IMPLEMENTATION SUGGESTIONS" AND ADD OPTIONS TO THE INITIAL BPA-1 DISPLAY FOR GAME PLAYER TO CHOOSE OPTIONS.
+If a player undercuts the suit or trump suit, the player who wins the trick is the player who played the highest card of the suit or trump suit.

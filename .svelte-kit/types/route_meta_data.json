@@ -1,6 +1,8 @@
 {
 	"/": [],
 	"/anticipate-cards-remaining": [],
+	"/bridge-analysis": [],
+	"/bridge-analysis/capture-missing-trump": [],
 	"/bridge-memory": [],
 	"/bridge-memory/track-cards-played": [],
 	"/bridge-memory/track-cards-played/game1": [],

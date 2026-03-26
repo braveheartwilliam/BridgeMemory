@@ -11,20 +11,17 @@
 	let flipInterval = $state<number>(2.0);  // Time between card flips in seconds
 	let isAutoFlipping = $state<boolean>(false);  // Track if auto flipping is active
 	let autoFlipInterval: number | null = null;  // Store interval ID
-	let flipSequence = $state<'random' | 'ordered'>('ordered');  // Choose flip sequence
-	let manuallyClickedCards = $state<string[]>([]);  // Track all cards clicked in manual mode
-	// Track cards clicked in different sections
-	let handCardFlippedIds = $state<string[]>([]);  // Cards clicked in "Your Hand"
+	let flipSequence = $state<'random' | 'ordered'>('ordered');  // For backward compatibility, keep flippedCardIds as the union of both
+	let flippedCardIds = $state<string[]>([]);  // Cards clicked in "Your Hand"
 	let allPossibleCardFlippedIds = $state<string[]>([]);  // Cards clicked in "All Possible Cards"
 	let correctlyMatchedCards = $state<string[]>([]);  // Cards correctly matched and should stay face up
-	
-	// For backward compatibility, keep flippedCardIds as the union of both
-	let flippedCardIds = $derived(() => [...handCardFlippedIds, ...allPossibleCardFlippedIds]);
 	let incorrectCount = $state<number>(0);
 	let attemptCount = $state<number>(0);
 	let feedbackMessage = $state<string>('');
 	let isProcessing = $state<boolean>(false);
 	let autoFlipTimer = $state<number | null>(null);
+	let handCardFlippedIds = $state<string[]>([]);  // Cards clicked in "Your Hand"
+	let manuallyClickedCards = $state<string[]>([]);  // Track all cards clicked in manual mode
 	let currentFlippedCard = $state<string | null>(null);
 	let allCardsFlippedOnce = $state<boolean>(false);
 	let lastCardFlippedBack = $state<boolean>(false);
@@ -336,10 +333,7 @@
 		} else {
 			allPossibleCardFlippedIds = [...allPossibleCardFlippedIds, cardId];
 		}
-
-		// Increment attempt count
-		attemptCount++;
-
+		
 		// Check if this is a correct match
 		const isCorrectMatch = isInAnyHand;
 		

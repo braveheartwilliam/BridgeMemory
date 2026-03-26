@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Card } from '$lib/types/bridge';
+	import type { Card, CardComponentProps } from '$lib/types/bridge';
 
 	// Props using Svelte 5 runes
-	let { card, size = 'medium', clickable = false, onClick, flipped = false, bridgeTheme = false } = $props();
+	let { card, size = 'medium', clickable = false, onClick, flipped = false, bridgeTheme = false, showBack = false }: CardComponentProps = $props();
 
 	// Support both card interfaces (bridge types and game types)
 	const suitSymbols = {

@@ -243,6 +243,7 @@
 			if (!selectedCardIds.has(selectedCard.id)) {
 				handCards.push(selectedCard);
 				selectedCardIds.add(selectedCard.id);
+				selectedCardIds.add(selectedCard.id);
 			}
 		}
 		
@@ -286,14 +287,16 @@
 	
 	// Flip the next card in automated mode
 	function flipNextCard() {
-		const unflippedCards = handCards.filter(card => !flippedCardIds.includes(`${card.suit}-${card.rank}`));
+		const unflippedCards = handCards.filter(card => !flippedCardIds.has(`${card.suit}-${card.rank}`));
 		if (unflippedCards.length === 0) {
 			isProcessing = false;
 			return;
 		}
 		
-		const card = unflippedCards[0];
-		const cardId = `${card.suit}-${card.rank}`;
+		const randomIndex = Math.floor(Math.random() * unflippedCards.length);
+		const selectedCard = unflippedCards[randomIndex];
+		handCards.push(selectedCard);
+		selectedCardIds.add(`${card.suit}-${card.rank}`);
 		
 		// If there's a current flipped card, flip it back first
 		if (currentFlippedCard) {
@@ -301,7 +304,8 @@
 		}
 		
 		// Flip the new card
-		flippedCardIds = [...flippedCardIds, cardId];
+		const newFlippedCardIds = new Set([...flippedCardIds, cardId]);
+		flippedCardIds = Array.from(newFlippedCardIds);
 		currentFlippedCard = cardId;
 		
 		// Check if all cards have been flipped at least once
@@ -565,8 +569,8 @@
 			// Add to correctly matched cards to keep face up permanently
 			correctlyMatchedCards = [...correctlyMatchedCards, cardId];
 			
-			// Mark this All Possible Cards as clicked (only correct matches get grayed)
-			allPossibleCardFlippedIds = [...allPossibleCardFlippedIds, cardId];
+			// Mark this All Possible Cards as clicked (only correct matches get grayed out)
+			allPossibleCardFlippedIds.push(cardId);
 			
 			// Check if all hand cards have been correctly matched
 			console.log('Checking completion - correctlyMatchedCards.length:', correctlyMatchedCards.length);
@@ -811,7 +815,7 @@
 												return rankOrder[b.rank] - rankOrder[a.rank]; // High to low
 											}) as card}
 												{@const cardId = `${card.suit}-${card.rank}`}
-												{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
+												{@const isFlipped = flippedCardIds.has(cardId) || correctlyMatchedCards.has(cardId)}
 												<Card 
 													card={card}
 													size="large"
