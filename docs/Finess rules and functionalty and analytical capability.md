@@ -1,0 +1,19 @@
+# Finess rules and functionalty and analytical capability
+## Overview
+### In the game of Bridge, a finesse is a tactical play where a player plays a card to take advantage of the position of the cards held by the opponents.  The goal is to win a trick when the opponents have a card that would normally win the trick, but the Declarer/Dummy can take it by playing a card that is higher than the opponent's card.
+## Rules
+1. For purposes of this game, finesses will only be part of the "Hint" and/or "Analysis" features for the hearts suit - which is always the trump suit.
+2. Since the Declarer and Dummy are on the same team, the finesse will only be played against the opponents - and only in the trump suit (hearts).
+3. The finesse can be played by the Declarer when it has a high card in the suit, and the Dummy has a lower card in the suit; or when the Declarer has a lower card in the suit, and the Dummy has a higher card in the suit.
+4. The finesse can be played by the Dummy when it has a high card in the suit, and the Declarer has a lower card in the suit; or when the Dummy has a lower card in the suit, and the Declarer has a higher card in the suit.
+5. The order of play for a finesse can vary - it can be played by the Declarer, or by the Dummy depending on the situation and the cards held by each player and the analysis and probability of the cards held by the opponents.
+6. The finesse is ONLY Necessary if the Declarer/Dummy partners do not have enough high cards in the suit to win all of the opponents high cards without the need for a finesse.  For example, if one of the opponents has at least one face card (King, Queen, or Jack) in the suit, and the Declarer/Dummy partners do not have enough high cards to win all of the opponents high cards, then a finesse may be necessary to win the trick.  Specific example: Dummy has the Ace of hearts, and the Declarer has the Queen of hearts.  The opponent to the left of the Declarer has the King of hearts and a small heart.  The Declarer can play the Queen of hearts, if the opponent plays a small heart and the trick is won but the opponent retains the King of hearts and can win the trick the next time a heart is led.
+
+## Functionality
+### Hint
+#### Total number of Partner's hearts
+1. If the total number of hearts between the Declarer and Dummy is greater than 9, then a finesse is not necessary if the Declarer or Dummy has the Ace of hearts and the King of hearts or if one Declarer/Dummy has the Ace of hearts and the other has the King of hearts AND the other partner has at least one other low card in the suit.  The "Hint" should suggest playing the Ace and then the King (the King and then the Ace if the King is played first). However, the hint should include a caution that the finesse may still be necessary if the distribution of hearts is such that the finesse is the only way to win the trick meaning that the opponent with the King of hearts has at least 2 other small hearts.  The Declarer/Dummy should consider the bidding and the cards played so far to determine the likelihood of that distribution of hearts.
+#### Distribution of Partner's hearts
+1. If the Declarer holds the Ace of hearts and the dummy holds the Queen and Jack of hearts, or vis-a-versa, (but opponents hold the King and 10 of hearts) then the Declarer/Dummy holding the Ace should play a low card on the first heart trick.  If the next opponent does not play the King of hearts, then the Declarer/Dummy should play the Queen of hearts.  If the next opponent plays the King of hearts, then the Declarer/Dummy should play a low heart.
+### Analysis
+1. 

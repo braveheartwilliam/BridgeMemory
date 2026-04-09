@@ -434,8 +434,9 @@
 					</div>
 					{#if gameMode === 'timed'}
 						<div class="mt-3">
-							<label class="block text-sm font-medium text-gray-700 mb-1">Display Time (seconds):</label>
+							<label for="display-time" class="block text-sm font-medium text-gray-700 mb-1">Display Time (seconds):</label>
 							<input 
+								id="display-time"
 								type="number" 
 								bind:value={displayTime} 
 								min="1" 
@@ -507,11 +508,21 @@
 						{#each ['spades', 'hearts', 'clubs', 'diamonds'] as suit}
 							<div class="flex gap-1.5 mb-1">
 								{#each sortCards(allPossibleCards).filter(card => card.suit === suit) as card (card)}
-									<div class="px-0 py-0 text-lg border inline-block cursor-pointer hover:bg-gray-100 {card.suit === 'hearts' || card.suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} {isCardInHand(card) ? 'font-bold' : ''} {isCardClicked(`${card.suit}-${card.rank}`) ? 'bg-blue-200 hover:bg-blue-200' : ''}"
+									<button 
+										type="button"
+										class="px-2 py-1 text-lg border inline-block hover:bg-gray-100 {card.suit === 'hearts' || card.suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} {isCardInHand(card) ? 'font-bold' : ''} {isCardClicked(`${card.suit}-${card.rank}`) ? 'bg-blue-200 hover:bg-blue-200' : ''}"
 										onclick={() => handleAllPossibleCardClick(card)}
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												e.preventDefault();
+												handleAllPossibleCardClick(card);
+											}
+										}}
+										aria-label={`${card.rank} of ${card.suit}`}
+										aria-pressed={isCardClicked(`${card.suit}-${card.rank}`)}
 									>
-										{#if card.suit === 'spades'}♠{:else if card.suit === 'hearts'}♥{:else if card.suit === 'diamonds'}♦{:else if card.suit === 'clubs'}♣{/if}{card.rank}
-									</div>
+										{#if card.suit === 'spades'}&spades;{:else if card.suit === 'hearts'}&hearts;{:else if card.suit === 'diamonds'}&diams;{:else if card.suit === 'clubs'}&clubs;{/if}{card.rank}
+									</button>
 								{/each}
 							</div>
 						{/each}

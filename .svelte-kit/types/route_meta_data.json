@@ -1,5 +1,7 @@
 {
-	"/": [],
+	"/": [
+		"src/routes/+page.server.ts"
+	],
 	"/anticipate-cards-remaining": [],
 	"/bridge-analysis": [],
 	"/bridge-analysis/capture-missing-trump": [],
@@ -8,5 +10,8 @@
 	"/bridge-memory/track-cards-played/game1": [],
 	"/bridge-memory/track-cards-played/game2": [],
 	"/bridge-memory/track-cards-played/game3": [],
-	"/hand-demo": []
+	"/hand-demo": [],
+	"/login": [
+		"src/routes/login/+page.server.ts"
+	]
 }

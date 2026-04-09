@@ -53,6 +53,33 @@
 	// Opponent play level
 	let opponentPlayLevel = $state<'beginner' | 'intermediate' | 'advanced'>('beginner');
 	
+	// BPA-1 Hint System
+	let hintsEnabled = $state<boolean>(false);
+	let currentHint = $state<string>('');
+	let hintDetails = $state<string>('');
+	let showHintDetails = $state<boolean>(false);
+	let hintProbability = $state<number>(0);
+	let hintSuccessRate = $state<string>('');
+	let hintPlaySequence = $state<string[]>([]);
+	let showPlaySequence = $state<boolean>(false);
+	
+	// Hint system state tracking
+	let hintAnalysis = $state<{
+		situation: string;
+		options: Array<{
+			play: string;
+			reasoning: string;
+			probability: number;
+			successRate: string;
+			playSequence: string[];
+		}>;
+		recommended: number;
+	}>({
+		situation: '',
+		options: [],
+		recommended: 0
+	});
+	
 	// Track who played each card in current trick
 	let trickCardPlayers = $state<('west' | 'dummy' | 'east' | 'declarer')[]>([]);
 
@@ -65,8 +92,587 @@
 		goto('/bridge-memory');
 	}
 
+	// BPA-1 Hint System Functions
+	
+	// Toggle hints on/off
+	function toggleHints() {
+		hintsEnabled = !hintsEnabled;
+		console.log('💡 Hints', hintsEnabled ? 'ENABLED' : 'DISABLED');
+		
+		if (hintsEnabled && gameStarted && !gameCompleted) {
+			generateHint();
+		} else {
+			clearHint();
+		}
+	}
+	
+	// Clear current hint
+	function clearHint() {
+		currentHint = '';
+		hintDetails = '';
+		showHintDetails = false;
+		hintProbability = 0;
+		hintSuccessRate = '';
+		hintPlaySequence = [];
+		showPlaySequence = false;
+		hintAnalysis = {
+			situation: '',
+			options: [],
+			recommended: 0
+		};
+	}
+	
+	// Generate hint based on current game situation
+	function generateHint() {
+		if (!gameStarted || gameCompleted || !hintsEnabled) {
+			clearHint();
+			return;
+		}
+		
+		console.log('🧠 Generating hint for game situation...');
+		
+		// Analyze current situation and generate appropriate hint
+		const analysis = analyzeGameSituation();
+		hintAnalysis = analysis;
+		
+		if (analysis.options.length > 0) {
+			const recommendedOption = analysis.options[analysis.recommended];
+			currentHint = recommendedOption.play;
+			hintDetails = recommendedOption.reasoning;
+			hintProbability = recommendedOption.probability;
+			hintSuccessRate = recommendedOption.successRate;
+			hintPlaySequence = recommendedOption.playSequence;
+			
+			console.log('💡 Hint generated:', currentHint);
+			console.log('📊 Success probability:', hintProbability + '%');
+			console.log('🎯 Success rate:', hintSuccessRate);
+		} else {
+			currentHint = 'No specific hint available for this situation.';
+			hintDetails = 'Continue playing according to bridge rules.';
+			hintProbability = 0;
+			hintSuccessRate = '';
+			hintPlaySequence = [];
+		}
+	}
+	
+	// Analyze current game situation and generate hint options
+	function analyzeGameSituation() {
+		const analysis = {
+			situation: '',
+			options: [] as Array<{
+				play: string;
+				reasoning: string;
+				probability: number;
+				successRate: string;
+				playSequence: string[];
+			}>,
+			recommended: 0
+		};
+		
+		// Determine current situation
+		if (!gameStarted) {
+			analysis.situation = 'Game not started';
+			return analysis;
+		}
+		
+		if (gameCompleted) {
+			analysis.situation = 'Game completed';
+			return analysis;
+		}
+		
+		// Analyze based on game phase
+		if (trickPhase === 'waiting') {
+			analysis.situation = 'Between tricks - waiting for Next Trick';
+			analysis.options = generateBetweenTricksHints();
+		} else if (trickPhase === 'playing') {
+			if (currentTrick.length === 0) {
+				analysis.situation = 'Leading a trick';
+				analysis.options = generateLeadHints();
+			} else {
+				analysis.situation = 'Following suit in trick';
+				analysis.options = generateFollowHints();
+			}
+		} else if (trickPhase === 'manual_play') {
+			analysis.situation = 'Manual card selection required';
+			analysis.options = generateManualPlayHints();
+		}
+		
+		// Set recommended option (highest probability)
+		if (analysis.options.length > 0) {
+			analysis.recommended = 0; // First option is recommended
+		}
+		
+		return analysis;
+	}
+	
+	// Generate hints for leading a trick
+	function generateLeadHints() {
+		const hints = [];
+		const playerHand = currentPlayerTurn === 'declarer' ? hand4Cards : 
+		                  currentPlayerTurn === 'dummy' ? hand1Cards : 
+		                  currentPlayerTurn === 'west' ? hand2Cards : hand3Cards;
+		
+		// Analyze hand composition
+		const suitAnalysis = analyzeHandSuits(playerHand);
+		const totalTricks = declarerTricks + opponentsTricks;
+		
+		// Generate lead options based on hand analysis
+		for (const suit of ['spades', 'hearts', 'diamonds', 'clubs'] as const) {
+			const suitInfo = suitAnalysis[suit];
+			if (suitInfo.count > 0 && suit.suit !== 'hearts') { // Don't lead hearts unless very strong
+				const probability = calculateLeadSuccessProbability(suitInfo, totalTricks);
+				const successRate = getSuccessRateDescription(probability);
+				const playSequence = generateLeadPlaySequence(suit, suitInfo);
+				
+				hints.push({
+					play: `Lead ${getCardDescription(suitInfo.highest)} from ${suit}`,
+					reasoning: `Strong ${suit} suit with ${suitInfo.count} cards and ${suitInfo.honorCount} honors. ${getLeadReasoning(suitInfo)}`,
+					probability: probability,
+					successRate: successRate,
+					playSequence: playSequence
+				});
+			}
+		}
+		
+		// Sort by probability (highest first)
+		hints.sort((a, b) => b.probability - a.probability);
+		
+		return hints.slice(0, 3); // Return top 3 options
+	}
+	
+	// Generate hints for following suit
+	function generateFollowHints() {
+		const hints = [];
+		const leadSuit = getLeadSuit();
+		
+		if (!leadSuit) {
+			return hints;
+		}
+		
+		const playerHand = currentPlayerTurn === 'declarer' ? hand4Cards : 
+		                  currentPlayerTurn === 'dummy' ? hand1Cards : 
+		                  currentPlayerTurn === 'west' ? hand2Cards : hand3Cards;
+		
+		const suitCards = getCardsInSuit(playerHand, leadSuit);
+		
+		if (suitCards.length > 0) {
+			// Must follow suit - generate options for which card to play
+			for (const card of suitCards) {
+				const probability = calculateFollowSuccessProbability(card, leadSuit);
+				const successRate = getSuccessRateDescription(probability);
+				const playSequence = generateFollowPlaySequence(card, leadSuit);
+				
+				hints.push({
+					play: `Play ${getCardDescription(card)} from ${leadSuit}`,
+					reasoning: getFollowReasoning(card, leadSuit, suitCards),
+					probability: probability,
+					successRate: successRate,
+					playSequence: playSequence
+				});
+			}
+		} else {
+			// Can't follow suit - can play any card including trump
+			const trumpCards = getCardsInSuit(playerHand, 'hearts');
+			
+			if (trumpCards.length > 0) {
+				// Trump options
+				for (const trumpCard of trumpCards) {
+					const probability = calculateTrumpSuccessProbability(trumpCard);
+					const successRate = getSuccessRateDescription(probability);
+					const playSequence = generateTrumpPlaySequence(trumpCard);
+					
+					hints.push({
+						play: `Play trump ${getCardDescription(trumpCard)}`,
+						reasoning: getTrumpReasoning(trumpCard, trumpCards),
+						probability: probability,
+						successRate: successRate,
+						playSequence: playSequence
+					});
+				}
+			}
+			
+			// Non-trump discard options
+			const nonTrumpCards = playerHand.filter(card => card.suit !== 'hearts');
+			for (const discardCard of nonTrumpCards.slice(0, 2)) { // Top 2 discard options
+				const probability = calculateDiscardSuccessProbability(discardCard);
+				const successRate = getSuccessRateDescription(probability);
+				const playSequence = generateDiscardPlaySequence(discardCard);
+				
+				hints.push({
+					play: `Discard ${getCardDescription(discardCard)}`,
+					reasoning: getDiscardReasoning(discardCard, nonTrumpCards),
+					probability: probability,
+					successRate: successRate,
+					playSequence: playSequence
+				});
+			}
+		}
+		
+		// Sort by probability and return top options
+		hints.sort((a, b) => b.probability - a.probability);
+		return hints.slice(0, 3);
+	}
+	
+	// Generate hints for manual play (Declarer/Dummy)
+	function generateManualPlayHints() {
+		const hints = [];
+		const playerHand = currentPlayerTurn === 'declarer' ? hand4Cards : hand1Cards;
+		
+		// Use same logic as follow hints since manual play occurs during trick
+		return generateFollowHints();
+	}
+	
+	// Generate hints between tricks
+	function generateBetweenTricksHints() {
+		const hints = [];
+		const totalTricks = declarerTricks + opponentsTricks;
+		const tricksNeeded = 10 - declarerTricks;
+		const tricksRemaining = 13 - totalTricks;
+		
+		if (tricksNeeded > 0 && tricksRemaining >= tricksNeeded) {
+			const probability = Math.min(95, (declarerTricks / 10) * 100);
+			const successRate = getSuccessRateDescription(probability);
+			const playSequence = generateEndgameSequence();
+			
+			hints.push({
+				play: 'Focus on making contract',
+				reasoning: `Need ${tricksNeeded} more tricks from ${tricksRemaining} remaining. Current progress: ${declarerTricks}/10 tricks.`,
+				probability: probability,
+				successRate: successRate,
+				playSequence: playSequence
+			});
+		} else if (declarerTricks >= 10) {
+			hints.push({
+				play: 'Play for overtricks',
+				reasoning: `Contract already made (${declarerTricks} tricks). Focus on maximizing tricks.`,
+				probability: 85,
+				successRate: 'High',
+				playSequence: generateOvertrickSequence()
+			});
+		}
+		
+		return hints;
+	}
+
 	function goToMain() {
 		goto('/');
+	}
+
+	// BPA-1 Hint System Helper Functions
+	
+	// Analyze hand suits for leading decisions
+	function analyzeHandSuits(hand: Card[]) {
+		const analysis: Record<string, {
+			count: number;
+			honorCount: number;
+			highest: Card;
+			lowest: Card;
+			sequence: Card[];
+		}> = {};
+		
+		for (const suit of ['spades', 'hearts', 'diamonds', 'clubs'] as const) {
+			const suitCards = getCardsInSuit(hand, suit).sort((a, b) => {
+				const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+				return rankOrder[b.rank] - rankOrder[a.rank];
+			});
+			
+			const honors = suitCards.filter(card => ['A', 'K', 'Q', 'J', '10'].includes(card.rank));
+			const sequence = findSequences(suitCards);
+			
+			analysis[suit] = {
+				count: suitCards.length,
+				honorCount: honors.length,
+				highest: suitCards[0] || null,
+				lowest: suitCards[suitCards.length - 1] || null,
+				sequence: sequence
+			};
+		}
+		
+		return analysis;
+	}
+	
+	// Find sequences in suit
+	function findSequences(cards: Card[]): Card[] {
+		if (cards.length < 2) return [];
+		
+		const sequences = [];
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		
+		for (let i = 0; i < cards.length - 1; i++) {
+			const currentRank = rankOrder[cards[i].rank];
+			const nextRank = rankOrder[cards[i + 1].rank];
+			
+			if (currentRank === nextRank + 1) {
+				sequences.push(cards[i]);
+				if (i + 2 < cards.length && rankOrder[cards[i + 2].rank] === nextRank - 1) {
+					sequences.push(cards[i + 1]);
+					if (i + 3 < cards.length && rankOrder[cards[i + 3].rank] === nextRank - 2) {
+						sequences.push(cards[i + 2]);
+					}
+				}
+			}
+		}
+		
+		return sequences;
+	}
+	
+	// Calculate lead success probability
+	function calculateLeadSuccessProbability(suitInfo: any, totalTricks: number): number {
+		let probability = 50; // Base probability
+		
+		// Adjust for suit length
+		if (suitInfo.count >= 5) probability += 20;
+		else if (suitInfo.count >= 4) probability += 15;
+		else if (suitInfo.count >= 3) probability += 10;
+		
+		// Adjust for honors
+		if (suitInfo.honorCount >= 3) probability += 15;
+		else if (suitInfo.honorCount >= 2) probability += 10;
+		else if (suitInfo.honorCount >= 1) probability += 5;
+		
+		// Adjust for sequences
+		if (suitInfo.sequence.length >= 3) probability += 10;
+		else if (suitInfo.sequence.length >= 2) probability += 5;
+		
+		// Adjust for game stage
+		if (totalTricks < 5) probability += 5; // Early game
+		else if (totalTricks > 8) probability -= 5; // Late game
+		
+		// Avoid leading hearts penalty
+		if (suitInfo.suit === 'hearts' && suitInfo.count < 6) probability -= 20;
+		
+		return Math.max(10, Math.min(95, probability));
+	}
+	
+	// Calculate follow suit success probability
+	function calculateFollowSuccessProbability(card: Card, leadSuit: string): number {
+		let probability = 50; // Base probability
+		
+		// Adjust for card rank
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		const cardRank = rankOrder[card.rank];
+		
+		if (cardRank >= 13) probability += 20; // Ace/King
+		else if (cardRank >= 12) probability += 15; // Queen
+		else if (cardRank >= 11) probability += 10; // Jack
+		else if (cardRank >= 10) probability += 5; // Ten
+		
+		// Adjust for current trick state
+		const currentTrickCards = currentTrick.map(id => parseCardId(id)).filter(Boolean);
+		const highestInTrick = Math.max(...currentTrickCards.map(c => rankOrder[c.rank]));
+		
+		if (cardRank > highestInTrick) probability += 15; // Can win trick
+		else if (cardRank === highestInTrick) probability += 5; // Tie
+		
+		// Adjust for position in trick
+		const position = currentTrick.length;
+		if (position === 3) probability += 10; // Last to play
+		else if (position === 2) probability += 5; // Third to play
+		
+		return Math.max(10, Math.min(95, probability));
+	}
+	
+	// Calculate trump success probability
+	function calculateTrumpSuccessProbability(trumpCard: Card): number {
+		let probability = 60; // Base probability for trump
+		
+		// Adjust for trump rank
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		const cardRank = rankOrder[trumpCard.rank];
+		
+		if (cardRank >= 13) probability += 15; // Ace/King of trump
+		else if (cardRank >= 12) probability += 10; // Queen of trump
+		else if (cardRank >= 11) probability += 5; // Jack of trump
+		
+		// Check if trump can win current trick
+		const currentTrickCards = currentTrick.map(id => parseCardId(id)).filter(Boolean);
+		const nonTrumpCards = currentTrickCards.filter(c => c.suit !== 'hearts');
+		
+		if (nonTrumpCards.length > 0) {
+			probability += 20; // Trump beats non-trump
+		}
+		
+		// Check for higher trumps already played
+		const higherTrumpsPlayed = currentTrickCards.filter(c => 
+			c.suit === 'hearts' && rankOrder[c.rank] > cardRank
+		);
+		
+		if (higherTrumpsPlayed.length > 0) {
+			probability -= 15; // Higher trump already played
+		}
+		
+		return Math.max(10, Math.min(95, probability));
+	}
+	
+	// Calculate discard success probability
+	function calculateDiscardSuccessProbability(discardCard: Card): number {
+		let probability = 40; // Base probability for discard
+		
+		// Prefer discarding low cards
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		const cardRank = rankOrder[discardCard.rank];
+		
+		if (cardRank <= 5) probability += 15; // Very low card
+		else if (cardRank <= 8) probability += 10; // Low card
+		else if (cardRank <= 10) probability += 5; // Medium card
+		else probability -= 10; // High card
+		
+		// Prefer discarding from long suits
+		const playerHand = currentPlayerTurn === 'declarer' ? hand4Cards : 
+		                  currentPlayerTurn === 'dummy' ? hand1Cards : 
+		                  currentPlayerTurn === 'west' ? hand2Cards : hand3Cards;
+		const suitLength = getCardsInSuit(playerHand, discardCard.suit).length;
+		
+		if (suitLength >= 5) probability += 10; // Long suit
+		else if (suitLength <= 2) probability -= 10; // Short suit
+		
+		return Math.max(10, Math.min(85, probability));
+	}
+	
+	// Get success rate description
+	function getSuccessRateDescription(probability: number): string {
+		if (probability >= 80) return 'Very High';
+		if (probability >= 65) return 'High';
+		if (probability >= 50) return 'Medium';
+		if (probability >= 35) return 'Low';
+		return 'Very Low';
+	}
+	
+	// Get card description
+	function getCardDescription(card: Card): string {
+		if (!card) return 'Unknown';
+		return `${card.rank} of ${card.suit}`;
+	}
+	
+	// Get lead reasoning
+	function getLeadReasoning(suitInfo: any): string {
+		if (suitInfo.sequence.length >= 2) {
+			return `Lead top of sequence to establish suit.`;
+		}
+		if (suitInfo.count >= 5) {
+			return `Long suit - lead to establish length.`;
+		}
+		if (suitInfo.honorCount >= 2) {
+			return `Strong suit with honors - good lead potential.`;
+		}
+		return `Safe lead from 4th highest card.`;
+	}
+	
+	// Get follow reasoning
+	function getFollowReasoning(card: Card, leadSuit: string, suitCards: Card[]): string {
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		const cardRank = rankOrder[card.rank];
+		const isHighest = cardRank === Math.max(...suitCards.map(c => rankOrder[c.rank]));
+		
+		if (isHighest && cardRank >= 12) {
+			return `Play high honor to potentially win trick.`;
+		}
+		if (cardRank <= 5) {
+			return `Play low card - conserve high cards for later.`;
+		}
+		if (suitCards.length === 2) {
+			return `Second card - play appropriately based on partnership.`;
+		}
+		return `Standard follow suit play.`;
+	}
+	
+	// Get trump reasoning
+	function getTrumpReasoning(trumpCard: Card, trumpCards: Card[]): string {
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		const cardRank = rankOrder[trumpCard.rank];
+		const isHighest = cardRank === Math.max(...trumpCards.map(c => rankOrder[c.rank]));
+		
+		if (isHighest) {
+			return `Play highest trump to win trick.`;
+		}
+		if (trumpCards.length > 3) {
+			return `Plenty of trumps - can afford to play this one.`;
+		}
+		return `Conserve trumps - play low trump.`;
+	}
+	
+	// Get discard reasoning
+	function getDiscardReasoning(discardCard: Card, nonTrumpCards: Card[]): string {
+		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+		const cardRank = rankOrder[discardCard.rank];
+		
+		if (cardRank <= 3) {
+			return `Discard lowest card - no value.`;
+		}
+		if (cardRank <= 8) {
+			return `Discard low card - minimal value.`;
+		}
+		return `Discard from longest suit to preserve short suits.`;
+	}
+	
+	// Generate play sequences
+	function generateLeadPlaySequence(suit: string, suitInfo: any): string[] {
+		const sequence = [];
+		sequence.push(`Lead ${getCardDescription(suitInfo.highest)} from ${suit}`);
+		sequence.push(`Watch opponent responses to gauge strength`);
+		sequence.push(`Plan to establish suit with subsequent leads`);
+		return sequence;
+	}
+	
+	function generateFollowPlaySequence(card: Card, leadSuit: string): string[] {
+		const sequence = [];
+		sequence.push(`Play ${getCardDescription(card)} to follow suit`);
+		sequence.push(`Observe partner's card if applicable`);
+		sequence.push(`Plan next trick based on outcome`);
+		return sequence;
+	}
+	
+	function generateTrumpPlaySequence(trumpCard: Card): string[] {
+		const sequence = [];
+		sequence.push(`Play trump ${getCardDescription(trumpCard)}`);
+		sequence.push(`Draw opponent trumps if possible`);
+		sequence.push(`Use remaining trumps to control play`);
+		return sequence;
+	}
+	
+	function generateDiscardPlaySequence(discardCard: Card): string[] {
+		const sequence = [];
+		sequence.push(`Discard ${getCardDescription(discardCard)}`);
+		sequence.push(`Signal strength/weakness to partner`);
+		sequence.push(`Preserve key cards for future tricks`);
+		return sequence;
+	}
+	
+	function generateEndgameSequence(): string[] {
+		const sequence = [];
+		const tricksNeeded = 10 - declarerTricks;
+		sequence.push(`Focus on making ${tricksNeeded} more tricks`);
+		sequence.push(`Cash established winners first`);
+		sequence.push(`Use trump to control remaining tricks`);
+		sequence.push(`Preserve entries to both hands`);
+		return sequence;
+	}
+	
+	function generateOvertrickSequence(): string[] {
+		const sequence = [];
+		sequence.push(`Contract secured - play for maximum tricks`);
+		sequence.push(`Test opponent distributions`);
+		sequence.push(`Set up finesses for extra tricks`);
+		sequence.push(`Use trump efficiently for overtricks`);
+		return sequence;
+	}
+	
+	// Parse card ID to Card object
+	function parseCardId(cardId: string): Card | null {
+		const parts = cardId.split('-');
+		if (parts.length !== 2) return null;
+		
+		return {
+			suit: parts[0] as Suit,
+			rank: parts[1]
+		};
+	}
+	
+	// Update hint generation calls in existing functions
+	function updateHintsIfEnabled() {
+		if (hintsEnabled && gameStarted && !gameCompleted) {
+			generateHint();
+		}
 	}
 
 	// Simple test counter
@@ -78,6 +684,11 @@
 		console.log('🧪 Component test - gameCompleted:', gameCompleted);
 		console.log('🧪 Component test - flippedCardIds:', flippedCardIds);
 		console.log('🧪 Component test - correctlyMatchedCards:', correctlyMatchedCards);
+		
+		// Auto-update hints when game state changes
+		if (hintsEnabled && gameStarted && !gameCompleted) {
+			updateHintsIfEnabled();
+		}
 	});
 
 	// Card data for Game 3-2 (4 hands)
@@ -279,33 +890,18 @@
 		const validation = validateDeal(hand4Cards, hand1Cards);
 		
 		if (!validation.isValid) {
-			console.log('🚫 CRITICAL: Cannot start game - Invalid deal detected');
-			console.log('   Issues:', validation.errors.join(', '));
-			console.log('   Please wait for a valid deal or generate new deal...');
-			return; // Don't start game with invalid deal
+			console.error('❌ Invalid deal - cannot start game');
+			console.error('Validation errors:', validation.errors);
+			feedbackMessage = 'Invalid deal - please reset and try again';
+			return;
 		}
 		
 		console.log('🎮 Starting Bridge Play Analysis');
+		console.log('🎴 Declarer and Dummy cards set as face-up:', hand4Cards.length + hand1Cards.length, 'cards');
+		
+		// Set game state
 		gameStarted = true;
 		gameCompleted = false;
-		incorrectCount = 0;
-		attemptCount = 0;
-		feedbackMessage = '';
-		manuallyClickedCards = [];
-		handCardFlippedIds = [];
-		allPossibleCardFlippedIds = [];
-		isAutoFlipping = false;
-		if (autoFlipInterval) {
-			clearInterval(autoFlipInterval);
-		}
-		if (autoFlipTimer) {
-			clearTimeout(autoFlipTimer);
-			autoFlipTimer = null;
-		}
-		if (trickTimer) {
-			clearTimeout(trickTimer);
-			trickTimer = null;
-		}
 		allCardsFlippedOnce = false;
 		lastCardFlippedBack = false;
 		
@@ -373,13 +969,16 @@
 		// Start with the current player (winner of previous trick) playing first
 		if (currentPlayerTurn === 'west') {
 			playWestCard();
-		} else if (currentPlayerTurn === 'dummy') {
-			playDummyCard();
 		} else if (currentPlayerTurn === 'east') {
 			playEastCard();
+		} else if (currentPlayerTurn === 'dummy') {
+			playDummyCard();
 		} else if (currentPlayerTurn === 'declarer') {
 			playDeclarerCard();
 		}
+		
+		// Update hints if enabled
+		updateHintsIfEnabled();
 	}
 
 	// Helper function to get the lead suit of the current trick
@@ -793,6 +1392,9 @@
 		trickPhase = 'playing';
 		advanceToNextPlayer();
 		console.log('✅ Successfully called advanceToNextPlayer');
+		
+		// Update hints if enabled
+		updateHintsIfEnabled();
 	}
 
 	// Reset the game
@@ -835,6 +1437,9 @@
 		trickPhase = 'setup';
 		currentSetTricks = [];
 		tricksInCurrentSet = 0;
+		
+		// Clear hints when game resets
+		clearHint();
 		
 		// Generate cards with retry logic for valid deals
 		let attempts = 0;
@@ -1356,6 +1961,112 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- BPA-1 Hint System -->
+		<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+			<div class="space-y-4">
+				<div class="flex items-center justify-between">
+					<h3 class="text-lg font-bold text-gray-800">BPA-1 Hint System</h3>
+					<button 
+						onclick={toggleHints}
+						class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-md"
+					>
+						{hintsEnabled ? '🔔 Hints ON' : '🔕 Hints OFF'}
+					</button>
+				</div>
+				
+				{#if hintsEnabled && currentHint}
+					<div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+						<div class="space-y-3">
+							<div class="flex items-center justify-between">
+								<h4 class="font-semibold text-blue-800">Current Hint:</h4>
+								<div class="flex items-center space-x-2">
+									{#if hintProbability > 0}
+										<span class="text-sm font-medium text-blue-600">
+											Success: {hintProbability}%
+										</span>
+										<span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+											{hintSuccessRate}
+										</span>
+									{/if}
+								</div>
+							</div>
+							
+							<p class="text-blue-700 font-medium">{currentHint}</p>
+							
+							{#if hintDetails}
+								<div class="bg-white/70 rounded p-3">
+									<p class="text-sm text-gray-700">{hintDetails}</p>
+								</div>
+							{/if}
+							
+							{#if hintPlaySequence.length > 0}
+								<div class="space-y-2">
+									<div class="flex items-center justify-between">
+										<h5 class="text-sm font-semibold text-blue-800">Play Sequence:</h5>
+										<button 
+											onclick={() => showPlaySequence = !showPlaySequence}
+											class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+										>
+											{showPlaySequence ? 'Hide' : 'Show'}
+										</button>
+									</div>
+									
+									{#if showPlaySequence}
+										<div class="bg-white/70 rounded p-3 space-y-1">
+											{#each hintPlaySequence as step, index}
+												<div class="flex items-start space-x-2">
+													<span class="text-xs font-semibold text-blue-600 mt-1">{index + 1}.</span>
+													<p class="text-sm text-gray-700">{step}</p>
+												</div>
+											{/each}
+										</div>
+									{/if}
+								</div>
+							{/if}
+							
+							{#if hintAnalysis.options.length > 1}
+								<div class="space-y-2">
+									<div class="flex items-center justify-between">
+										<h5 class="text-sm font-semibold text-blue-800">Alternative Options:</h5>
+										<button 
+											onclick={() => showHintDetails = !showHintDetails}
+											class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+										>
+											{showHintDetails ? 'Hide' : 'Show'}
+										</button>
+									</div>
+									
+									{#if showHintDetails}
+										<div class="bg-white/70 rounded p-3 space-y-2">
+											{#each hintAnalysis.options.slice(1) as option}
+												<div class="border-l-2 border-blue-300 pl-3">
+													<div class="flex items-center justify-between">
+														<p class="text-sm font-medium text-gray-700">{option.play}</p>
+														<span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+															{option.probability}%
+														</span>
+													</div>
+													<p class="text-xs text-gray-600 mt-1">{option.reasoning}</p>
+												</div>
+											{/each}
+										</div>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					</div>
+				{:else if hintsEnabled}
+					<div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+						<p class="text-gray-600 text-center">🤔 Start playing to receive hints...</p>
+					</div>
+				{:else}
+					<div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+						<p class="text-gray-600 text-center">💡 Enable hints to get strategic guidance during play</p>
+					</div>
+				{/if}
+			</div>
+		</div>
 
 		
 		<!-- Game Controls -->

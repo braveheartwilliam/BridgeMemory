@@ -39,6 +39,234 @@ Play of cards for each trick proceeds clockwise from the player who led the firs
 
 - Declarer points + Dummy points must add to at least 23 AND no more than 28
 
+## Hint System
+
+### BPA-1 Hint System
+
+The BPA-1 hint system provides contextual guidance to the game player based on the current game situation. Hints are designed to help players learn optimal bridge strategies while maintaining game integrity.
+
+#### Hint System Components
+
+**1. Hint Toggle Control**
+- Player can enable/disable hints at any time
+- Hints are optional and do not affect game scoring
+- Hint availability depends on game state and situation
+
+**2. Context-Aware Hints**
+- Hints analyze current trick situation
+- Consider cards played in current trick
+- Consider remaining cards in player's hand
+- Consider partnership position and game phase
+
+**3. Strategic Guidance**
+- Hints suggest optimal plays based on bridge rules
+- Hints explain reasoning behind recommendations
+- Hints adapt to player skill level (beginner/intermediate/advanced)
+
+**4. Learning Integration**
+- Hints reinforce bridge fundamentals
+- Hints teach card counting techniques
+- Hints demonstrate strategic thinking patterns
+- Hints progress in complexity as game advances
+
+#### Hint Categories
+
+**Card Selection Hints:**
+- Which card to play in current situation
+- Suit following requirements
+- Trump card usage timing
+- Lead card selection strategy
+
+**Defensive Hints:**
+- When to hold high cards
+- When to play low cards
+- How to signal to partner
+- When to sacrifice tricks
+
+**Offensive Hints:**
+- How to establish suits
+- When to pull high cards
+- Finesse execution techniques
+- Trump management strategies
+
+**Counting Hints:**
+- Which cards to track
+- Inference from played cards
+- Probability calculations
+- Distribution analysis
+
+#### Implementation Guidelines
+
+**Hint Activation:**
+- Available during all game phases
+- Toggle on/off without penalty
+- Context-sensitive to current situation
+- Progressive disclosure based on skill level
+
+**Hint Content:**
+- Clear, actionable advice
+- Bridge rule references
+- Strategic reasoning explanation
+- Multiple option suggestions when applicable
+
+**Integration Points:**
+- Works with existing game state
+- Complements opponent AI logic
+- Enhances learning experience
+- Maintains competitive balance
+
+#### Hint System Rules
+
+**Hint Activation Rules:**
+- Hints available when gameStarted = true AND hintsEnabled = true
+- Hints disabled during game setup and completion
+- Hints context-sensitive to current trick state
+- Hints respect bridge rules and fair play
+
+**Hint Content Guidelines:**
+- Provide 2-3 strategic options when multiple valid plays exist
+- Explain bridge rule reasoning for each suggestion
+- Include probability analysis for card selection
+- Consider partnership implications (declarer/dummy vs opponents)
+- Adapt complexity based on current trick number and game phase
+
+**Hint Categories by Game Phase:**
+
+**Trick Formation Phase:**
+- *Card Selection*: Which card to lead from hand
+- *Suit Analysis*: Strength and weakness of each suit
+- *Trump Strategy*: When to use hearts and when to hold
+- *Lead Selection*: 4th highest, top of sequence, or singleton ace
+
+**During Trick Play:**
+- *Follow Suit Requirements*: When must follow vs. when can play any card
+- *Trump Usage*: Optimal timing for heart cards
+- *Winning Strategy*: How to win current trick
+- *Defensive Play*: When to hold back vs. when to push
+
+**Between Tricks:**
+- *Card Counting*: Track opponent's remaining high cards
+- *Distribution Analysis*: Infer suit lengths and voids
+- *Partnership Signals*: What played cards communicate
+- *Position Planning*: Next trick leader strategy
+
+**End Game Strategy:**
+- *Contract Fulfillment*: How to reach 10 tricks target
+- *Risk Management*: When to play safe vs. aggressive
+- *Count Verification*: Ensure accurate trick counting
+
+#### Specific Hint Scenarios
+
+**Scenario 1: Opening Lead Selection**
+```
+Situation: West opponent to lead first trick
+Available Information:
+- West hand composition (13 cards)
+- No cards played yet
+- Partnership strength (points + distribution)
+
+Hint Categories:
+1. **Strong Suit Leads**: Lead longest suit with honors
+2. **Safe Leads**: Lead from suit with 4+ cards, no honor sequences
+3. **Trump Leads**: Lead hearts only when very strong (6+ hearts)
+4. **Sequence Leads**: Lead KQJ from solid sequences
+5. **Weak Suit Leads**: Lead 4th/5th highest from weak suits
+
+Decision Factors:
+- Avoid leading hearts (trump) unless very strong
+- Prefer suits with 4+ cards for safety
+- Consider honor cards for establishing tricks
+- Account for dummy's visible cards in strategy
+```
+
+**Scenario 2: Following Suit with Limited Options**
+```
+Situation: Player must follow suit but has limited choices
+Available Information:
+- Current trick cards played
+- Player's remaining cards in led suit
+- Partnership position in trick order
+
+Hint Categories:
+1. **High Card Strategy**: Play highest card when winning likely
+2. **Low Card Strategy**: Play low card when winning unlikely
+3. **Count Signal**: Play high card to show strength
+4. **Finesse Setup**: Play low to set up future finesse
+5. **Trump Preservation**: Save trump for critical moments
+
+Decision Factors:
+- Current trick winner status
+- Cards yet to be played by partners
+- Opponent's likely holdings
+- Contract implications (tricks needed)
+```
+
+**Scenario 3: Trump Card Management**
+```
+Situation: Player has no cards in led suit, can play trump
+Available Information:
+- Trump suit length (hearts count)
+- Current trick state (cards played)
+- Vulnerability and contract implications
+
+Hint Categories:
+1. **Trump Pull**: When to draw out opponent trumps
+2. **Trump Promotion**: When to play high trump to win
+3. **Trump Sacrifice**: When to lose trump for future gain
+4. **Trump Economy**: Conserve trump for endgame
+5. **Trump Signals**: High trump vs. low trump meanings
+
+Decision Factors:
+- Number of trumps remaining
+- Strength of non-trump suits
+- Critical trick vs. non-critical trick
+- Stage of game (early vs. late)
+```
+
+**Scenario 4: Defensive Card Counting**
+```
+Situation: Tracking opponent's high cards for future planning
+Available Information:
+- Cards played in current trick
+- Cards opponents have played in previous tricks
+- Current hand distribution knowledge
+
+Hint Categories:
+1. **High Card Tracking**: Monitor Aces, Kings, Queens, Jacks
+2. **Suit Length Analysis**: Track cards played from each suit
+3. **Void Detection**: Identify when opponents are out of specific suits
+4. **Pattern Recognition**: Recognize common play patterns
+5. **Probability Calculation**: Estimate likely opponent holdings
+
+Counting Techniques:
+- **Mental Counting**: Track high cards as they appear
+- **Card Memory**: Remember key cards from previous tricks
+- **Inference Logic**: Deduce holdings from play patterns
+- **Partnership Analysis**: Coordinate with partner's cards
+```
+
+**Scenario 5: Endgame Strategy**
+```
+Situation: Approaching contract fulfillment (tricks 8-12)
+Available Information:
+- Tricks won by each partnership
+- Remaining high cards in play
+- Critical tricks vs. non-critical tricks
+
+Hint Categories:
+1. **Contract Planning**: Which tricks must win vs. can lose
+2. **Risk Assessment**: Conservative vs. aggressive play
+3. **Timing Decisions**: When to cash winners vs. when to wait
+4. **Partnership Coordination**: Use dummy's entries effectively
+5. **Safety Plays**: When to prioritize making contract over extra tricks
+
+Endgame Factors:
+- Number of tricks needed for contract
+- Location of high cards (declarer vs. opponents)
+- Trump suit status (remaining vs. exhausted)
+- Potential for overtricks vs. undertricks
+```
+
 ## Trick Play
 
 ### Suit Following Rules (CRITICAL)

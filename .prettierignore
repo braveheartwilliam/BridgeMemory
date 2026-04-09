@@ -1,0 +1,11 @@
+# Dependencies to ignore during linting
+node_modules/
+build/
+dist/
+.svelte-kit/
+coverage/
+*.log
+.env*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

@@ -12,13 +12,14 @@ export const nodes = [
 	() => import('./nodes/8'),
 	() => import('./nodes/9'),
 	() => import('./nodes/10'),
-	() => import('./nodes/11')
+	() => import('./nodes/11'),
+	() => import('./nodes/12')
 ];
 
 export const server_loads = [];
 
 export const dictionary = {
-		"/": [2],
+		"/": [~2],
 		"/anticipate-cards-remaining": [3],
 		"/bridge-analysis": [4],
 		"/bridge-analysis/capture-missing-trump": [5],
@@ -27,7 +28,8 @@ export const dictionary = {
 		"/bridge-memory/track-cards-played/game1": [8],
 		"/bridge-memory/track-cards-played/game2": [9],
 		"/bridge-memory/track-cards-played/game3": [10],
-		"/hand-demo": [11]
+		"/hand-demo": [11],
+		"/login": [~12]
 	};
 
 export const hooks = {

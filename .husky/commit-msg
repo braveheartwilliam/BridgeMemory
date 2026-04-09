@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Regex for conventional commits
+commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+    echo "
+    Commit message must follow conventional commit format:
+    feat: add new feature
+    fix: resolve bug
+    docs: update documentation
+    style: formatting changes
+    refactor: code refactoring
+    test: add tests
+    chore: maintenance tasks
+    perf: performance improvements
+    ci: CI/CD changes
+    build: build system changes
+    revert: revert previous change
+    
+    Examples:
+    feat(game): add hint system for bridge strategies
+    fix(auth): resolve session timeout issue
+    docs(readme): update installation instructions
+    "
+    exit 1
+fi
+
+echo "Commit message validation passed!"

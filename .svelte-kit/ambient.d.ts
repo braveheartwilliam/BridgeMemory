@@ -38,6 +38,15 @@
  * The above values will be the same _even if_ different values for `ENVIRONMENT` or `PUBLIC_BASE_URL` are set at runtime, as they are statically replaced in your code with their build time values.
  */
 declare module '$env/static/private' {
+	export const DATABASE_URL: string;
+	export const BETTER_AUTH_SECRET: string;
+	export const BETTER_AUTH_URL: string;
+	export const NODE_ENV: string;
+	export const PORT: string;
+	export const SESSION_SECRET: string;
+	export const JWT_SECRET: string;
+	export const DEBUG: string;
+	export const LOG_LEVEL: string;
 	export const NVM_INC: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
@@ -78,7 +87,6 @@ declare module '$env/static/private' {
 	export const npm_package_json: string;
 	export const _: string;
 	export const BRAVE_API_KEY: string;
-	export const LaunchInstanceID: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
 	export const USER_ZDOTDIR: string;
@@ -118,11 +126,10 @@ declare module '$env/static/private' {
 	export const GIT_ASKPASS: string;
 	export const INFOPATH: string;
 	export const HOMEBREW_CELLAR: string;
-	export const SECURITYSESSIONID: string;
 	export const npm_node_execpath: string;
 	export const npm_config_prefix: string;
 	export const COLORTERM: string;
-	export const NODE_ENV: string;
+	export const VITE_USER_NODE_ENV: string;
 }
 
 /**
@@ -209,6 +216,15 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		DATABASE_URL: string;
+		BETTER_AUTH_SECRET: string;
+		BETTER_AUTH_URL: string;
+		NODE_ENV: string;
+		PORT: string;
+		SESSION_SECRET: string;
+		JWT_SECRET: string;
+		DEBUG: string;
+		LOG_LEVEL: string;
 		NVM_INC: string;
 		TERM_PROGRAM: string;
 		NODE: string;
@@ -249,7 +265,6 @@ declare module '$env/dynamic/private' {
 		npm_package_json: string;
 		_: string;
 		BRAVE_API_KEY: string;
-		LaunchInstanceID: string;
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
 		USER_ZDOTDIR: string;
@@ -289,11 +304,10 @@ declare module '$env/dynamic/private' {
 		GIT_ASKPASS: string;
 		INFOPATH: string;
 		HOMEBREW_CELLAR: string;
-		SECURITYSESSIONID: string;
 		npm_node_execpath: string;
 		npm_config_prefix: string;
 		COLORTERM: string;
-		NODE_ENV: string;
+		VITE_USER_NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
