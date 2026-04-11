@@ -1,8 +1,8 @@
 import { a as auth } from "../../../../chunks/auth.js";
 import { redirect } from "@sveltejs/kit";
-async function GET({ event }) {
+async function GET({ request }) {
   const session = await auth.api.getSession({
-    headers: event.request.headers
+    headers: request.headers
   });
   if (!session) {
     throw redirect(302, "/login");
