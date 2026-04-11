@@ -1,9 +1,9 @@
 import { auth } from '$lib/auth';
 import { redirect, error } from '@sveltejs/kit';
 
-export async function GET({ event }) {
+export async function GET({ request }) {
   const session = await auth.api.getSession({
-    headers: event.request.headers,
+    headers: request.headers,
   });
 
   if (!session) {

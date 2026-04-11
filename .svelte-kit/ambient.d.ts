@@ -66,9 +66,11 @@ declare module '$env/static/private' {
 	export const WINDSURF_CASCADE_TERMINAL: string;
 	export const MallocNanoZone: string;
 	export const COLOR: string;
+	export const GIT_AUTHOR_DATE: string;
 	export const npm_config_noproxy: string;
 	export const npm_config_local_prefix: string;
 	export const ZSH: string;
+	export const GIT_EDITOR: string;
 	export const USER: string;
 	export const NVM_DIR: string;
 	export const LS_COLORS: string;
@@ -77,8 +79,10 @@ declare module '$env/static/private' {
 	export const CONDA_EXE: string;
 	export const WINDSURF_USE_CASCADE_SANDBOX: string;
 	export const SSH_AUTH_SOCK: string;
+	export const GIT_INDEX_FILE: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
+	export const GIT_AUTHOR_NAME: string;
 	export const PAGER: string;
 	export const _CE_CONDA: string;
 	export const LSCOLORS: string;
@@ -86,7 +90,6 @@ declare module '$env/static/private' {
 	export const PATH: string;
 	export const GSETTINGS_SCHEMA_DIR: string;
 	export const npm_package_json: string;
-	export const _: string;
 	export const BRAVE_API_KEY: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
@@ -128,12 +131,14 @@ declare module '$env/static/private' {
 	export const INFOPATH: string;
 	export const HOMEBREW_CELLAR: string;
 	export const GIT_ASKPASS: string;
+	export const GIT_AUTHOR_EMAIL: string;
 	export const WINDSURF_CASCADE_TERMINAL_ID: string;
 	export const GIT_PAGER: string;
 	export const GIT_EXEC_PATH: string;
 	export const npm_node_execpath: string;
 	export const npm_config_prefix: string;
 	export const COLORTERM: string;
+	export const _: string;
 	export const VITE_USER_NODE_ENV: string;
 }
 
@@ -249,9 +254,11 @@ declare module '$env/dynamic/private' {
 		WINDSURF_CASCADE_TERMINAL: string;
 		MallocNanoZone: string;
 		COLOR: string;
+		GIT_AUTHOR_DATE: string;
 		npm_config_noproxy: string;
 		npm_config_local_prefix: string;
 		ZSH: string;
+		GIT_EDITOR: string;
 		USER: string;
 		NVM_DIR: string;
 		LS_COLORS: string;
@@ -260,8 +267,10 @@ declare module '$env/dynamic/private' {
 		CONDA_EXE: string;
 		WINDSURF_USE_CASCADE_SANDBOX: string;
 		SSH_AUTH_SOCK: string;
+		GIT_INDEX_FILE: string;
 		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
+		GIT_AUTHOR_NAME: string;
 		PAGER: string;
 		_CE_CONDA: string;
 		LSCOLORS: string;
@@ -269,7 +278,6 @@ declare module '$env/dynamic/private' {
 		PATH: string;
 		GSETTINGS_SCHEMA_DIR: string;
 		npm_package_json: string;
-		_: string;
 		BRAVE_API_KEY: string;
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
@@ -311,12 +319,14 @@ declare module '$env/dynamic/private' {
 		INFOPATH: string;
 		HOMEBREW_CELLAR: string;
 		GIT_ASKPASS: string;
+		GIT_AUTHOR_EMAIL: string;
 		WINDSURF_CASCADE_TERMINAL_ID: string;
 		GIT_PAGER: string;
 		GIT_EXEC_PATH: string;
 		npm_node_execpath: string;
 		npm_config_prefix: string;
 		COLORTERM: string;
+		_: string;
 		VITE_USER_NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
