@@ -49,7 +49,7 @@ declare module "$app/types" {
 			"/login": Record<string, never>;
 			"/register": Record<string, never>
 		};
-		Pathname(): "/" | "/anticipate-cards-remaining" | "/bridge-analysis" | "/bridge-analysis/capture-missing-trump" | "/bridge-memory" | "/bridge-memory/track-cards-played" | "/bridge-memory/track-cards-played/game1" | "/bridge-memory/track-cards-played/game2" | "/bridge-memory/track-cards-played/game3" | "/hand-demo" | "/login";
+		Pathname(): "/" | "/anticipate-cards-remaining" | "/api/auth" | "/bridge-analysis" | "/bridge-analysis/capture-missing-trump" | "/bridge-memory" | "/bridge-memory/track-cards-played" | "/bridge-memory/track-cards-played/game1" | "/bridge-memory/track-cards-played/game2" | "/bridge-memory/track-cards-played/game3" | "/hand-demo" | "/login";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/apple-touch-icon-precomposed.png" | "/apple-touch-icon.png" | "/favicon.ico" | "/favicon.png" | "/favicon.svg" | string & {};
 	}

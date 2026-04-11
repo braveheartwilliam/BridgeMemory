@@ -3,6 +3,9 @@
 		"src/routes/+page.server.ts"
 	],
 	"/anticipate-cards-remaining": [],
+	"/api/auth": [
+		"src/routes/api/auth/+server.ts"
+	],
 	"/bridge-analysis": [],
 	"/bridge-analysis/capture-missing-trump": [],
 	"/bridge-memory": [],

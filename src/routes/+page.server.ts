@@ -1,26 +1,15 @@
 import { z } from 'zod';
 import { superValidate } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
+import { zod } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-
-// Simple validation schemas
-const userSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().optional()
-});
-
-const gameSessionSchema = z.object({
-  name: z.string().min(1),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  maxPlayers: z.number().min(1).max(4)
-});
+import { auth } from '$lib/auth';
+import { userSchema, gameSessionSchema } from '$lib/validation';
 
 export const load = (async () => {
   // Initialize forms with SuperForms
-  const loginForm = await superValidate(zod4(userSchema));
-  const gameSessionForm = await superValidate(zod4(gameSessionSchema));
+  const loginForm = await superValidate(zod(userSchema));
+  const gameSessionForm = await superValidate(zod(gameSessionSchema));
 
   return {
     loginForm,
@@ -29,42 +18,91 @@ export const load = (async () => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-  login: async ({ request }) => {
-    const form = await superValidate(request, zod4(userSchema));
+  login: async ({ request, cookies }) => {
+    const form = await superValidate(request, zod(userSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
-    // Simple login logic for now
-    console.log('Login attempt:', form.data);
-    
-    return { form, success: true, message: 'Login successful (demo)' };
+    try {
+      const result = await auth.api.signIn({
+        body: {
+          email: form.data.email,
+          password: form.data.password
+        },
+        headers: cookies
+      });
+
+      if (result.user) {
+        throw redirect(302, '/dashboard');
+      }
+
+      return fail(400, { form, message: 'Invalid credentials' });
+    } catch (error) {
+      return fail(500, { form, message: 'Authentication failed' });
+    }
   },
 
-  register: async ({ request }) => {
-    const form = await superValidate(request, zod4(userSchema));
+  register: async ({ request, cookies }) => {
+    const form = await superValidate(request, zod(userSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
-    // Simple registration logic for now
-    console.log('Registration attempt:', form.data);
-    
-    return { form, success: true, message: 'Registration successful (demo)' };
+    try {
+      const result = await auth.api.signUp({
+        body: {
+          email: form.data.email,
+          password: form.data.password,
+          name: form.data.name
+        },
+        headers: cookies
+      });
+
+      if (result.user) {
+        // Auto-login after successful registration
+        const loginResult = await auth.api.signIn({
+          body: {
+            email: form.data.email,
+            password: form.data.password
+          },
+          headers: cookies
+        });
+
+        if (loginResult.user) {
+          throw redirect(302, '/dashboard');
+        }
+      }
+
+      return fail(400, { form, message: 'Registration failed' });
+    } catch (error) {
+      return fail(500, { form, message: 'Registration failed' });
+    }
   },
 
-  createGameSession: async ({ request }) => {
-    const form = await superValidate(request, zod4(gameSessionSchema));
+  createGameSession: async ({ request, cookies }) => {
+    const form = await superValidate(request, zod(gameSessionSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
-    // Simple game session creation logic for now
-    console.log('Game session creation:', form.data);
-    
-    return { form, success: true, message: 'Game session created (demo)' };
+    const session = await auth.api.getSession({
+      headers: cookies
+    });
+
+    if (!session?.user) {
+      return fail(401, { form, message: 'Authentication required' });
+    }
+
+    try {
+      // Create game session logic would go here
+      // For now, return success
+      return { form, success: true, message: 'Game session created' };
+    } catch (error) {
+      return fail(500, { form, message: 'Failed to create game session' });
+    }
   }
 } satisfies Actions;
