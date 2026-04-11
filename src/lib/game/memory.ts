@@ -45,12 +45,12 @@ export function updateMemory(memoryState: MemoryState, gameState: GameState): Me
 }
 
 function createAllCards(): Card[] {
-	const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-	const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+	const suits: ('hearts' | 'diamonds' | 'clubs' | 'spades')[] = ['hearts', 'diamonds', 'clubs', 'spades'];
+	const ranks: ('2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A')[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 	const cards: Card[] = [];
 	for (const suit of suits) {
 		for (const rank of ranks) {
-			cards.push({ suit, rank });
+			cards.push({ suit, rank, id: `${suit}-${rank}` });
 		}
 	}
 	return cards;

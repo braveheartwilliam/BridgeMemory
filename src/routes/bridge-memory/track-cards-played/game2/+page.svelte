@@ -10,7 +10,7 @@
 	let gameCompleted = $state<boolean>(false);  // Track if game is completed
 	let flipInterval = $state<number>(2.0);  // Time between card flips in seconds
 	let isAutoFlipping = $state<boolean>(false);  // Track if auto flipping is active
-	let autoFlipInterval: number | null = null;  // Store interval ID
+	let autoFlipInterval: ReturnType<typeof setInterval> | null = null;  // Store interval ID
 	let flipSequence = $state<'random' | 'ordered'>('ordered');  // Choose flip sequence
 	let manuallyClickedCards = $state<string[]>([]);  // Track all cards clicked in manual mode
 	// Track cards clicked in different sections
@@ -24,7 +24,7 @@
 	let attemptCount = $state<number>(0);
 	let feedbackMessage = $state<string>('');
 	let isProcessing = $state<boolean>(false);
-	let autoFlipTimer = $state<number | null>(null);
+	let autoFlipTimer = $state<ReturnType<typeof setTimeout> | null>(null);
 	let currentFlippedCard = $state<string | null>(null);
 	let allCardsFlippedOnce = $state<boolean>(false);
 	let lastCardFlippedBack = $state<boolean>(false);
@@ -208,7 +208,8 @@
 		incorrectCount = 0;
 		attemptCount = 0;
 		feedbackMessage = '';
-		flippedCardIds = [];
+		handCardFlippedIds = [];
+		allPossibleCardFlippedIds = [];
 		isProcessing = false;
 		currentFlippedCard = null;
 		allCardsFlippedOnce = false;
@@ -225,7 +226,7 @@
 				allPossibleCards.push({
 					suit,
 					rank,
-					id: `${suit}-${rank}`  // Add id property for duplicate checking
+					id: `${suit}-${rank}`
 				});
 			}
 		}
@@ -240,10 +241,10 @@
 			const selectedCard = allPossibleCards[randomIndex];
 			
 			// Check if this card is already in hand
-			if (!selectedCardIds.has(selectedCard.id)) {
+			const cardId = `${selectedCard.suit}-${selectedCard.rank}`;
+			if (!selectedCardIds.has(cardId)) {
 				handCards.push(selectedCard);
-				selectedCardIds.add(selectedCard.id);
-				selectedCardIds.add(selectedCard.id);
+				selectedCardIds.add(cardId);
 			}
 		}
 		
@@ -287,7 +288,7 @@
 	
 	// Flip the next card in automated mode
 	function flipNextCard() {
-		const unflippedCards = handCards.filter(card => !flippedCardIds.has(`${card.suit}-${card.rank}`));
+		const unflippedCards = handCards.filter(card => !flippedCardIds().includes(`${card.suit}-${card.rank}`));
 		if (unflippedCards.length === 0) {
 			isProcessing = false;
 			return;
@@ -295,21 +296,19 @@
 		
 		const randomIndex = Math.floor(Math.random() * unflippedCards.length);
 		const selectedCard = unflippedCards[randomIndex];
-		handCards.push(selectedCard);
-		selectedCardIds.add(`${card.suit}-${card.rank}`);
+		const cardId = `${selectedCard.suit}-${selectedCard.rank}`;
 		
 		// If there's a current flipped card, flip it back first
 		if (currentFlippedCard) {
-			flippedCardIds = flippedCardIds.filter(id => id !== currentFlippedCard);
+			handCardFlippedIds = handCardFlippedIds.filter(id => id !== currentFlippedCard);
 		}
 		
 		// Flip the new card
-		const newFlippedCardIds = new Set([...flippedCardIds, cardId]);
-		flippedCardIds = Array.from(newFlippedCardIds);
+		handCardFlippedIds = [...handCardFlippedIds, cardId];
 		currentFlippedCard = cardId;
 		
 		// Check if all cards have been flipped at least once
-		const flippedUniqueCards = new Set(flippedCardIds);
+		const flippedUniqueCards = new Set(flippedCardIds());
 		if (flippedUniqueCards.size >= handCards.length) {
 			allCardsFlippedOnce = true;
 		}
@@ -464,7 +463,7 @@
 		allPossibleCards = [];
 		for (const suit of suits) {
 			for (const rank of ranks) {
-				allPossibleCards.push({ suit, rank });
+				allPossibleCards.push({ suit, rank, id: `${suit}-${rank}` });
 			}
 		}
 		
@@ -815,15 +814,15 @@
 												return rankOrder[b.rank] - rankOrder[a.rank]; // High to low
 											}) as card}
 												{@const cardId = `${card.suit}-${card.rank}`}
-												{@const isFlipped = flippedCardIds.has(cardId) || correctlyMatchedCards.has(cardId)}
+												{@const isFlipped = flippedCardIds().includes(cardId) || correctlyMatchedCards.includes(cardId)}
 												<Card 
-													card={card}
+													card={{...card, id: cardId}}
 													size="large"
 													bridgeTheme={true}
 													showBack={false}
 													flipped={isFlipped}
 													clickable={true}
-													onClick={() => handleCardClick(card.suit, card.rank)}
+													onclick={() => handleCardClick(card.suit, card.rank)}
 												/>
 											{/each}
 										</div>
@@ -844,7 +843,7 @@
 										{@const isFlipped = isAllPossibleCardFlipped(cardId)}
 										{#if !isFlipped}
 											<button
-												onclick={() => handleAllPossibleCardsClick(suit, rank)}
+												onclick={() => handleAllPossibleCardsClick(suit as 'hearts' | 'diamonds' | 'clubs' | 'spades', rank)}
 												class="px-3 py-2 text-sm font-semibold rounded-lg border-2 transition-all duration-150 min-w-[3rem] h-[2.5rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} hover:bg-gray-50 hover:shadow-lg"
 											>
 												{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'diamonds'}♦{:else if suit === 'clubs'}♣{/if}{rank}

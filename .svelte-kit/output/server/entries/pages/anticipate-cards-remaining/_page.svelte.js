@@ -1,13 +1,155 @@
-import { c as create_ssr_component, a as add_attribute } from "../../../chunks/ssr.js";
-/* empty css                   */const _page_svelte_svelte_type_style_lang = "";
-const css = {
-  code: "@keyframes svelte-184juik-fadeIn{from{opacity:0}to{opacity:1}}",
-  map: null
+import { F as FILENAME } from "../../../chunks/constants.js";
+import { a as attr } from "../../../chunks/attributes.js";
+import { p as push_element, a as pop_element } from "../../../chunks/dev.js";
+/* empty css                  */
+_page[FILENAME] = "src/routes/anticipate-cards-remaining/+page.svelte";
+function _page($$renderer, $$props) {
+  $$renderer.component(
+    ($$renderer2) => {
+      let gameMode = "counting";
+      let selectedPlayers = "all";
+      $$renderer2.push(`<div class="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-8">`);
+      push_element($$renderer2, "div", 32, 0);
+      $$renderer2.push(`<div class="max-w-6xl mx-auto">`);
+      push_element($$renderer2, "div", 33, 1);
+      $$renderer2.push(`<header class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-6 mb-8">`);
+      push_element($$renderer2, "header", 35, 2);
+      $$renderer2.push(`<div class="text-center">`);
+      push_element($$renderer2, "div", 36, 3);
+      $$renderer2.push(`<h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mb-4">`);
+      push_element($$renderer2, "h1", 37, 4);
+      $$renderer2.push(`Anticipate Cards Remaining</h1>`);
+      pop_element();
+      $$renderer2.push(` <p class="text-gray-600 text-lg">`);
+      push_element($$renderer2, "p", 40, 4);
+      $$renderer2.push(`Master the skill of calculating which cards are still in play. Predict opponents' holdings and make strategic decisions with confidence.</p>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</header>`);
+      pop_element();
+      $$renderer2.push(` <main class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl mb-8">`);
+      push_element($$renderer2, "main", 47, 2);
+      $$renderer2.push(`<h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">`);
+      push_element($$renderer2, "h2", 48, 3);
+      $$renderer2.push(`Game Configuration</h2>`);
+      pop_element();
+      $$renderer2.push(` <div class="grid md:grid-cols-2 gap-8 mb-8">`);
+      push_element($$renderer2, "div", 50, 3);
+      $$renderer2.push(`<div class="bg-white rounded-xl p-6 shadow-lg border border-teal-100">`);
+      push_element($$renderer2, "div", 52, 4);
+      $$renderer2.push(`<h3 class="text-lg font-semibold text-gray-800 mb-4">`);
+      push_element($$renderer2, "h3", 53, 5);
+      $$renderer2.push(`Game Mode</h3>`);
+      pop_element();
+      $$renderer2.push(` <div class="space-y-3">`);
+      push_element($$renderer2, "div", 54, 5);
+      $$renderer2.push(`<label class="flex items-center space-x-3 cursor-pointer">`);
+      push_element($$renderer2, "label", 55, 6);
+      $$renderer2.push(`<input type="radio" name="gameMode" value="counting"${attr("checked", gameMode === "counting", true)} class="w-4 h-4 text-teal-600 focus:ring-teal-500"/>`);
+      push_element($$renderer2, "input", 56, 7);
+      pop_element();
+      $$renderer2.push(` <span class="text-gray-700">`);
+      push_element($$renderer2, "span", 63, 7);
+      $$renderer2.push(`1) Card Counting Challenge</span>`);
+      pop_element();
+      $$renderer2.push(`</label>`);
+      pop_element();
+      $$renderer2.push(` <label class="flex items-center space-x-3 cursor-pointer">`);
+      push_element($$renderer2, "label", 65, 6);
+      $$renderer2.push(`<input type="radio" name="gameMode" value="prediction"${attr("checked", gameMode === "prediction", true)} class="w-4 h-4 text-teal-600 focus:ring-teal-500"/>`);
+      push_element($$renderer2, "input", 66, 7);
+      pop_element();
+      $$renderer2.push(` <span class="text-gray-700">`);
+      push_element($$renderer2, "span", 73, 7);
+      $$renderer2.push(`2) Prediction Challenge</span>`);
+      pop_element();
+      $$renderer2.push(`</label>`);
+      pop_element();
+      $$renderer2.push(` <label class="flex items-center space-x-3 cursor-pointer">`);
+      push_element($$renderer2, "label", 75, 6);
+      $$renderer2.push(`<input type="radio" name="gameMode" value="probability"${attr("checked", gameMode === "probability", true)} class="w-4 h-4 text-teal-600 focus:ring-teal-500"/>`);
+      push_element($$renderer2, "input", 76, 7);
+      pop_element();
+      $$renderer2.push(` <span class="text-gray-700">`);
+      push_element($$renderer2, "span", 83, 7);
+      $$renderer2.push(`3) Probability Analysis</span>`);
+      pop_element();
+      $$renderer2.push(`</label>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(` <div class="bg-white rounded-xl p-6 shadow-lg border border-cyan-100">`);
+      push_element($$renderer2, "div", 89, 4);
+      $$renderer2.push(`<h3 class="text-lg font-semibold text-gray-800 mb-4">`);
+      push_element($$renderer2, "h3", 90, 5);
+      $$renderer2.push(`Player Selection</h3>`);
+      pop_element();
+      $$renderer2.push(` <div class="space-y-3">`);
+      push_element($$renderer2, "div", 91, 5);
+      $$renderer2.push(`<label class="flex items-center space-x-3 cursor-pointer">`);
+      push_element($$renderer2, "label", 92, 6);
+      $$renderer2.push(`<input type="radio" name="players" value="all"${attr("checked", selectedPlayers === "all", true)} class="w-4 h-4 text-cyan-600 focus:ring-cyan-500"/>`);
+      push_element($$renderer2, "input", 93, 7);
+      pop_element();
+      $$renderer2.push(` <span class="text-gray-700">`);
+      push_element($$renderer2, "span", 100, 7);
+      $$renderer2.push(`All Players</span>`);
+      pop_element();
+      $$renderer2.push(`</label>`);
+      pop_element();
+      $$renderer2.push(` <label class="flex items-center space-x-3 cursor-pointer">`);
+      push_element($$renderer2, "label", 102, 6);
+      $$renderer2.push(`<input type="radio" name="players" value="specific"${attr("checked", selectedPlayers === "specific", true)} class="w-4 h-4 text-cyan-600 focus:ring-cyan-500"/>`);
+      push_element($$renderer2, "input", 103, 7);
+      pop_element();
+      $$renderer2.push(` <span class="text-gray-700">`);
+      push_element($$renderer2, "span", 110, 7);
+      $$renderer2.push(`Specific Player</span>`);
+      pop_element();
+      $$renderer2.push(`</label>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(` <div class="text-center mt-8">`);
+      push_element($$renderer2, "div", 117, 3);
+      $$renderer2.push(`<button class="px-8 py-4 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-lg rounded-xl hover:from-teal-600 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">`);
+      push_element($$renderer2, "button", 118, 4);
+      $$renderer2.push(`Start Card Analysis</button>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</main>`);
+      pop_element();
+      $$renderer2.push(` <nav class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-4 mt-8">`);
+      push_element($$renderer2, "nav", 128, 2);
+      $$renderer2.push(`<div class="text-center">`);
+      push_element($$renderer2, "div", 129, 3);
+      $$renderer2.push(`<a href="/" class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors duration-300">`);
+      push_element($$renderer2, "a", 130, 4);
+      $$renderer2.push(`← Back to Home</a>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</nav>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+      $$renderer2.push(`</div>`);
+      pop_element();
+    },
+    _page
+  );
+}
+_page.render = function() {
+  throw new Error("Component.render(...) is no longer valid in Svelte 5. See https://svelte.dev/docs/svelte/v5-migration-guide#Components-are-no-longer-classes for more information");
 };
-const Page = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-  $$result.css.add(css);
-  return `<div class="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-8"><div class="max-w-6xl mx-auto"> <header class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-6 mb-8" data-svelte-h="svelte-8i9ryp"><div class="text-center"><h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent mb-4">Anticipate Cards Remaining</h1> <p class="text-gray-600 text-lg">Master the skill of calculating which cards are still in play. Predict opponents&#39; holdings and make strategic decisions with confidence.</p></div></header>  <main class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl mb-8"><h2 class="text-2xl font-bold text-gray-800 mb-8 text-center" data-svelte-h="svelte-1cfr189">Game Configuration</h2> <div class="grid md:grid-cols-2 gap-8 mb-8"> <div class="bg-white rounded-xl p-6 shadow-lg border border-teal-100"><h3 class="text-lg font-semibold text-gray-800 mb-4" data-svelte-h="svelte-1cfbou2">Game Mode</h3> <div class="space-y-3"><label class="flex items-center space-x-3 cursor-pointer"><input type="radio" name="gameMode" value="counting" class="w-4 h-4 text-teal-600 focus:ring-teal-500"${add_attribute("checked", true, 1)}> <span class="text-gray-700" data-svelte-h="svelte-g2tqf0">1) Card Counting Challenge</span></label> <label class="flex items-center space-x-3 cursor-pointer"><input type="radio" name="gameMode" value="prediction" class="w-4 h-4 text-teal-600 focus:ring-teal-500"${""}> <span class="text-gray-700" data-svelte-h="svelte-1u12vrt">2) Prediction Challenge</span></label> <label class="flex items-center space-x-3 cursor-pointer"><input type="radio" name="gameMode" value="probability" class="w-4 h-4 text-teal-600 focus:ring-teal-500"${""}> <span class="text-gray-700" data-svelte-h="svelte-19dj4zx">3) Probability Analysis</span></label></div></div>  <div class="bg-white rounded-xl p-6 shadow-lg border border-cyan-100"><h3 class="text-lg font-semibold text-gray-800 mb-4" data-svelte-h="svelte-pkllnk">Player Selection</h3> <div class="space-y-3"><label class="flex items-center space-x-3 cursor-pointer"><input type="radio" name="players" value="all" class="w-4 h-4 text-cyan-600 focus:ring-cyan-500"${add_attribute("checked", true, 1)}> <span class="text-gray-700" data-svelte-h="svelte-qag11n">All Players</span></label> <label class="flex items-center space-x-3 cursor-pointer"><input type="radio" name="players" value="specific" class="w-4 h-4 text-cyan-600 focus:ring-cyan-500"${""}> <span class="text-gray-700" data-svelte-h="svelte-1bbwsv3">Specific Player</span></label></div></div></div>  <div class="text-center mt-8"><button class="px-8 py-4 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold text-lg rounded-xl hover:from-teal-600 hover:to-cyan-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl" data-svelte-h="svelte-1sbbcko">Start Card Analysis</button></div></main>  <nav class="bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-4 mt-8" data-svelte-h="svelte-14spe3i"><div class="text-center"><a href="/" class="inline-flex items-center px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors duration-300">← Back to Home</a></div></nav></div> </div>`;
-});
 export {
-  Page as default
+  _page as default
 };

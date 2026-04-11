@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 
 export async function load({ cookies }) {
   const session = await auth.api.getSession({
-    headers: cookies,
+    headers: { cookie: cookies.toString() },
   });
 
   if (session) {
@@ -21,16 +21,16 @@ export const actions = {
     const email = formData.get('email');
     const password = formData.get('password');
 
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return {
         error: 'Email and password are required',
       };
     }
 
     try {
-      const result = await auth.api.signIn({
+      const result = await auth.api.signInEmail({
         body: { email, password },
-        headers: cookies,
+        headers: { cookie: cookies.toString() },
       });
 
       if (result.user) {

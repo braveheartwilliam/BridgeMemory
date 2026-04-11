@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
+import { zod4 } from 'sveltekit-superforms/adapters';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
@@ -8,8 +8,8 @@ import { userSchema, gameSessionSchema } from '$lib/validation';
 
 export const load = (async () => {
   // Initialize forms with SuperForms
-  const loginForm = await superValidate(zod(userSchema));
-  const gameSessionForm = await superValidate(zod(gameSessionSchema));
+  const loginForm = await superValidate(zod4(userSchema));
+  const gameSessionForm = await superValidate(zod4(gameSessionSchema));
 
   return {
     loginForm,
@@ -19,19 +19,19 @@ export const load = (async () => {
 
 export const actions = {
   login: async ({ request, cookies }) => {
-    const form = await superValidate(request, zod(userSchema));
+    const form = await superValidate(request, zod4(userSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
     try {
-      const result = await auth.api.signIn({
+      const result = await auth.api.signInEmail({
         body: {
           email: form.data.email,
           password: form.data.password
         },
-        headers: cookies
+        headers: { cookie: cookies.toString() }
       });
 
       if (result.user) {
@@ -45,30 +45,30 @@ export const actions = {
   },
 
   register: async ({ request, cookies }) => {
-    const form = await superValidate(request, zod(userSchema));
+    const form = await superValidate(request, zod4(userSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
     try {
-      const result = await auth.api.signUp({
+      const result = await auth.api.signUpEmail({
         body: {
           email: form.data.email,
           password: form.data.password,
           name: form.data.name
         },
-        headers: cookies
+        headers: { cookie: cookies.toString() }
       });
 
       if (result.user) {
         // Auto-login after successful registration
-        const loginResult = await auth.api.signIn({
+        const loginResult = await auth.api.signInEmail({
           body: {
             email: form.data.email,
             password: form.data.password
           },
-          headers: cookies
+          headers: { cookie: cookies.toString() }
         });
 
         if (loginResult.user) {
@@ -83,14 +83,14 @@ export const actions = {
   },
 
   createGameSession: async ({ request, cookies }) => {
-    const form = await superValidate(request, zod(gameSessionSchema));
+    const form = await superValidate(request, zod4(gameSessionSchema));
 
     if (!form.valid) {
       return fail(400, { form });
     }
 
     const session = await auth.api.getSession({
-      headers: cookies
+      headers: { cookie: cookies.toString() }
     });
 
     if (!session?.user) {

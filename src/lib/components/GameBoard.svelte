@@ -13,7 +13,7 @@
 		<h3 class="font-semibold">Trick #{gameState.trickNumber}</h3>
 		<div class="flex gap-2">
 			{#each gameState.trick as card}
-				<Card {card} />
+				<Card card={{...card, id: `${card.suit}-${card.rank}`}} />
 			{/each}
 		</div>
 	</div>
@@ -25,10 +25,10 @@
 				<div class="flex flex-wrap gap-1 mt-2">
 					{#each player.hand as card}
 						<Card 
-							{card} 
+							card={{...card, id: `${card.suit}-${card.rank}`}}
 							size="small" 
 							clickable={player.isHuman && gameState.currentPlayer === index} 
-							onClick={() => onCardClick(card)}
+							onclick={() => onCardClick(card)}
 						/>
 					{/each}
 				</div>

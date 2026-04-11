@@ -28,7 +28,7 @@
 	let cardsRevealed: boolean = false;
 	let cardsRevealedOnce: boolean = false; // Track if cards have been revealed once
 	let gamePhase: 'setup' | 'memorize' | 'test' = 'setup'; // Track game phase
-	let timer: number | null = null;
+	let timer: ReturnType<typeof setTimeout> | null = null;
 	
 	// Card data
 	let handCards: BridgeCard[] = [];
@@ -61,7 +61,8 @@
 			for (const rank of ranks) {
 				allPossibleCards.push({
 					suit,
-					rank
+					rank,
+					id: `${suit}-${rank}`
 				});
 			}
 		}
@@ -186,8 +187,8 @@
 		}
 	}
 
-	function getCardColor(card: Card): string {
-		return (card.suit === 'H' || card.suit === 'D') ? 'border-red-400 bg-red-50' : 'border-black bg-gray-50';
+	function getCardColor(card: BridgeCard): string {
+		return (card.suit === 'hearts' || card.suit === 'diamonds') ? 'border-red-400 bg-red-50' : 'border-black bg-gray-50';
 	}
 
 	// Sort cards by suit (spades, hearts, clubs, diamonds) and rank (Ace to 2)
@@ -491,7 +492,7 @@
 							<div class="flex gap-1.5 mb-1">
 								{#each sortCards(handCards).filter(card => card.suit === suit) as card (card)}
 									<Card 
-										card={card} 
+										card={{...card, id: `${card.suit}-${card.rank}`}} 
 										size="medium" 
 										flipped={cardsRevealed || correctlyClickedCardIds.includes(`${card.suit}-${card.rank}`)}
 										bridgeTheme={true}

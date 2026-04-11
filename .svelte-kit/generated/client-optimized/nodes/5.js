@@ -1,1 +1,1 @@
-export { default as component } from "../../../../src/routes/track-cards-played/+page.svelte";
+export { default as component } from "../../../../src/routes/bridge-analysis/capture-missing-trump/+page.svelte";

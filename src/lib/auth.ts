@@ -1,14 +1,23 @@
 import { betterAuth } from 'better-auth';
-import { postgresAdapter } from 'better-auth/adapters/postgres';
+import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { db } from '$lib/db';
 
 export const auth = betterAuth({
-  database: postgresAdapter(db, {
+  database: drizzleAdapter(db, {
     provider: 'pg',
   }),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Set to true in production
+  },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // 1 day
+  },
+  account: {
+    accountLinking: {
+      enabled: false,
+    },
   },
   socialProviders: {
     google: {
@@ -20,20 +29,6 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
       enabled: !!process.env.GITHUB_CLIENT_ID && !!process.env.GITHUB_CLIENT_SECRET,
-    },
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-    },
-  },
-  account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ['google', 'github'],
     },
   },
   user: {
@@ -50,4 +45,4 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
-export type User = typeof auth.$Infer.User;
+export type User = typeof auth.$Infer.Session.user;

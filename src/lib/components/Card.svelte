@@ -1,8 +1,22 @@
 <script lang="ts">
-	import type { Card, CardComponentProps } from '$lib/types/bridge';
+	import type { Card, CardComponentProps } from '$lib/types';
 
 	// Props using Svelte 5 runes
-	let { card, size = 'medium', clickable = false, onClick, flipped = false, bridgeTheme = false, showBack = false }: CardComponentProps = $props();
+	let { card, size = 'medium', clickable = false, onclick, flipped = false, bridgeTheme = false, showBack = false }: CardComponentProps = $props();
+
+	// Handle click events with proper typing
+	function handleClick(event: MouseEvent) {
+		if (onclick) {
+			onclick(card);
+		}
+	}
+
+	// Handle keyboard events with proper typing  
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			onclick(card);
+		}
+	}
 
 	// Support both card interfaces (bridge types and game types)
 	const suitSymbols = {
@@ -131,7 +145,7 @@
 	type="button"
 	class="{sizeClasses[size]} relative border-2 rounded-lg shadow-md flex items-center justify-center hover:shadow-lg transition-all {bridgeTheme ? 'overflow-hidden' : 'bg-white border-gray-300'}"
 	style="transform-style: preserve-3d; transition: transform 0.3s;"
-	onclick={clickable ? onClick : undefined}
+	onclick={clickable ? handleClick : undefined}
 >
 	{#if bridgeTheme}
 		<!-- Bridge-themed card with face/back -->

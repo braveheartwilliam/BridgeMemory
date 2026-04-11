@@ -7,7 +7,7 @@ export function createDeck(): Card[] {
 	const deck: Card[] = [];
 	for (const suit of suits) {
 		for (const rank of ranks) {
-			deck.push({ suit, rank });
+			deck.push({ suit, rank, id: `${suit}-${rank}` });
 		}
 	}
 	return deck;

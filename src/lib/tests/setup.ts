@@ -1,11 +1,12 @@
 import { TextEncoder, TextDecoder } from 'util';
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
 
 // Mock Web APIs
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as any;
 
 // Mock fetch
-global.fetch = jest.fn();
+global.fetch = jest.fn() as any;
 
 // Mock localStorage
 const localStorageMock = {
@@ -14,7 +15,7 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.localStorage = localStorageMock as any;
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -23,21 +24,23 @@ const sessionStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
 };
-global.sessionStorage = sessionStorageMock as any;
+Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
+const mockResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}));
+})) as any;
+global.ResizeObserver = mockResizeObserver;
 
 // Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+const mockIntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}));
+})) as any;
+global.IntersectionObserver = mockIntersectionObserver;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -51,7 +54,7 @@ Object.defineProperty(window, 'matchMedia', {
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
-  })),
+  })) as jest.Mock,
 });
 
 // Reset mocks before each test
@@ -59,3 +62,5 @@ beforeEach(() => {
   jest.clearAllMocks();
   (global.fetch as jest.Mock).mockClear();
 });
+
+export { jest, mockIntersectionObserver, mockResizeObserver, localStorageMock };

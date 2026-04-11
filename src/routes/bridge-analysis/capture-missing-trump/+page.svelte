@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import Card from '$lib/components/Card.svelte';
 	import type { Card as BridgeCard } from '$lib/types/bridge';
+	import type { Card as CardType } from '$lib/types';
 	import { calculateHandPoints, calculateDummyPoints, validateDeal } from '$lib/game/points';
 
 	// Game state using Svelte 5 runes
@@ -39,7 +40,7 @@
 	let currentTrick = $state<string[]>([]); // Cards in current trick
 	let completedTricks = $state<string[][]>([]); // All completed tricks
 	let currentTrickIndex = $state(0); // Index for trick formation
-	let trickPhase = $state<'setup' | 'playing' | 'waiting' | 'manual_play'>('setup'); // Game phase
+	let trickPhase = $state<'setup' | 'playing' | 'waiting' | 'manual_play' | 'completed' | 'guessing'>('setup'); // Game phase
 	let trickTimer = $state<number | null>(null); // Timer for trick display
 	let currentSetTricks = $state<string[][]>([]); // Tricks in current memory set
 	let tricksInCurrentSet = $state(0); // Count of tricks in current set
@@ -49,6 +50,12 @@
 	// Bridge play counters
 	let opponentsTricks = $state<number>(0); // Counter for tricks won by opponents (West + East)
 	let declarerTricks = $state<number>(0); // Counter for tricks won by declarer/dummy partnership
+	
+	// Hand cards state
+	let hand1Cards = $state<CardType[]>([]); // Dummy hand
+	let hand2Cards = $state<CardType[]>([]); // West hand  
+	let hand3Cards = $state<CardType[]>([]); // East hand
+	let hand4Cards = $state<CardType[]>([]); // Declarer hand
 	
 	// Opponent play level
 	let opponentPlayLevel = $state<'beginner' | 'intermediate' | 'advanced'>('beginner');
@@ -219,14 +226,14 @@
 		// Generate lead options based on hand analysis
 		for (const suit of ['spades', 'hearts', 'diamonds', 'clubs'] as const) {
 			const suitInfo = suitAnalysis[suit];
-			if (suitInfo.count > 0 && suit.suit !== 'hearts') { // Don't lead hearts unless very strong
+			if (suitInfo.count > 0 && suit !== 'hearts') { // Don't lead hearts unless very strong
 				const probability = calculateLeadSuccessProbability(suitInfo, totalTricks);
 				const successRate = getSuccessRateDescription(probability);
 				const playSequence = generateLeadPlaySequence(suit, suitInfo);
 				
 				hints.push({
-					play: `Lead ${getCardDescription(suitInfo.highest)} from ${suit}`,
-					reasoning: `Strong ${suit} suit with ${suitInfo.count} cards and ${suitInfo.honorCount} honors. ${getLeadReasoning(suitInfo)}`,
+					play: 'Lead ' + getCardDescription({...suitInfo.highest, id: suitInfo.highest.suit + '-' + suitInfo.highest.rank}) + ' from ' + suit,
+					reasoning: 'Strong ' + suit + ' suit with ' + suitInfo.count + ' cards and ' + suitInfo.honorCount + ' honors. ' + getLeadReasoning(suitInfo),
 					probability: probability,
 					successRate: successRate,
 					playSequence: playSequence
@@ -258,13 +265,13 @@
 		if (suitCards.length > 0) {
 			// Must follow suit - generate options for which card to play
 			for (const card of suitCards) {
-				const probability = calculateFollowSuccessProbability(card, leadSuit);
+				const probability = calculateFollowSuccessProbability({...card, id: card.suit + '-' + card.rank}, leadSuit);
 				const successRate = getSuccessRateDescription(probability);
-				const playSequence = generateFollowPlaySequence(card, leadSuit);
+				const playSequence = generateFollowPlaySequence({...card, id: card.suit + '-' + card.rank}, leadSuit);
 				
 				hints.push({
-					play: `Play ${getCardDescription(card)} from ${leadSuit}`,
-					reasoning: getFollowReasoning(card, leadSuit, suitCards),
+					play: 'Play ' + getCardDescription({...card, id: card.suit + '-' + card.rank}) + ' from ' + leadSuit,
+					reasoning: getFollowReasoning({...card, id: card.suit + '-' + card.rank}, leadSuit, suitCards.map(c => ({...c, id: c.suit + '-' + c.rank}))),
 					probability: probability,
 					successRate: successRate,
 					playSequence: playSequence
@@ -277,13 +284,13 @@
 			if (trumpCards.length > 0) {
 				// Trump options
 				for (const trumpCard of trumpCards) {
-					const probability = calculateTrumpSuccessProbability(trumpCard);
+					const probability = calculateTrumpSuccessProbability({...trumpCard, id: trumpCard.suit + '-' + trumpCard.rank});
 					const successRate = getSuccessRateDescription(probability);
-					const playSequence = generateTrumpPlaySequence(trumpCard);
+					const playSequence = generateTrumpPlaySequence({...trumpCard, id: trumpCard.suit + '-' + trumpCard.rank});
 					
 					hints.push({
-						play: `Play trump ${getCardDescription(trumpCard)}`,
-						reasoning: getTrumpReasoning(trumpCard, trumpCards),
+						play: 'Play trump ' + getCardDescription({...trumpCard, id: trumpCard.suit + '-' + trumpCard.rank}),
+						reasoning: getTrumpReasoning({...trumpCard, id: trumpCard.suit + '-' + trumpCard.rank}, trumpCards.map(c => ({...c, id: c.suit + '-' + c.rank}))),
 						probability: probability,
 						successRate: successRate,
 						playSequence: playSequence
@@ -294,13 +301,13 @@
 			// Non-trump discard options
 			const nonTrumpCards = playerHand.filter(card => card.suit !== 'hearts');
 			for (const discardCard of nonTrumpCards.slice(0, 2)) { // Top 2 discard options
-				const probability = calculateDiscardSuccessProbability(discardCard);
+				const probability = calculateDiscardSuccessProbability({...discardCard, id: discardCard.suit + '-' + discardCard.rank});
 				const successRate = getSuccessRateDescription(probability);
-				const playSequence = generateDiscardPlaySequence(discardCard);
+				const playSequence = generateDiscardPlaySequence({...discardCard, id: discardCard.suit + '-' + discardCard.rank});
 				
 				hints.push({
-					play: `Discard ${getCardDescription(discardCard)}`,
-					reasoning: getDiscardReasoning(discardCard, nonTrumpCards),
+					play: 'Discard ' + getCardDescription({...discardCard, id: discardCard.suit + '-' + discardCard.rank}),
+					reasoning: getDiscardReasoning({...discardCard, id: discardCard.suit + '-' + discardCard.rank}, nonTrumpCards.map(c => ({...c, id: c.suit + '-' + c.rank}))),
 					probability: probability,
 					successRate: successRate,
 					playSequence: playSequence
@@ -336,7 +343,7 @@
 			
 			hints.push({
 				play: 'Focus on making contract',
-				reasoning: `Need ${tricksNeeded} more tricks from ${tricksRemaining} remaining. Current progress: ${declarerTricks}/10 tricks.`,
+				reasoning: 'Need ' + tricksNeeded + ' more tricks from ' + tricksRemaining + ' remaining. Current progress: ' + declarerTricks + '/10 tricks.',
 				probability: probability,
 				successRate: successRate,
 				playSequence: playSequence
@@ -344,7 +351,7 @@
 		} else if (declarerTricks >= 10) {
 			hints.push({
 				play: 'Play for overtricks',
-				reasoning: `Contract already made (${declarerTricks} tricks). Focus on maximizing tricks.`,
+				reasoning: 'Contract already made (' + declarerTricks + ' tricks). Focus on maximizing tricks.',
 				probability: 85,
 				successRate: 'High',
 				playSequence: generateOvertrickSequence()
@@ -358,16 +365,511 @@
 		goto('/');
 	}
 
+	function resetGame() {
+		console.log('Resetting game');
+		gameStarted = false;
+		gameCompleted = false;
+		trickPhase = 'setup';
+		currentPlayerTurn = 'west';
+		
+		// Reset all game state
+		currentTrick = [];
+		trickCardPlayers = [];
+		completedTricks = [];
+		currentTrickIndex = 0;
+		opponentsTricks = 0;
+		declarerTricks = 0;
+		
+		// Reset card states
+		handCardFlippedIds = [];
+		allPossibleCardFlippedIds = [];
+		correctlyMatchedCards = [];
+		feedbackMessage = '';
+		incorrectCount = 0;
+		attemptCount = 0;
+		
+		// Reinitialize cards
+		initializeCards();
+	}
+
+	// Game control functions
+	function startGame() {
+		console.log('Starting Bridge Play Analysis game');
+		gameStarted = true;
+		gameCompleted = false;
+		trickPhase = 'playing';
+		currentPlayerTurn = 'west';
+		
+		// Start with West opponent playing first card
+		playWestCard();
+	}
+
+	function handleNextTrick() {
+		console.log('Next Trick button clicked');
+		if (!isWaitingForNextTrick) {
+			console.log('Not waiting for next trick');
+			return;
+		}
+		
+		// Clear current trick and start new one
+		currentTrick = [];
+		trickCardPlayers = [];
+		isWaitingForNextTrick = false;
+		trickPhase = 'playing';
+		
+		// Winner of previous trick leads next trick
+		advanceToNextPlayer();
+	}
+
+	// Bridge gameplay helper functions
+	
+	// Get the lead suit from current trick
+	function getLeadSuit(): string | null {
+		if (currentTrick.length === 0) return null;
+		const firstCardId = currentTrick[0];
+		const [suit] = firstCardId.split('-');
+		return suit;
+	}
+	
+	// Get cards in a specific suit from a hand
+	function getCardsInSuit(hand: CardType[], suit: string): CardType[] {
+		return hand.filter(card => card.suit === suit);
+	}
+	
+	// Generate follow play sequence
+	function generateFollowPlaySequence(card: CardType, leadSuit: string): string[] {
+		const sequence = [];
+		sequence.push('Play ' + getCardDescription(card) + ' to follow suit');
+		sequence.push('Observe partner\'s card if applicable');
+		sequence.push('Plan next trick based on outcome');
+		return sequence;
+	}
+	
+	// Generate trump play sequence  
+	function generateTrumpPlaySequence(trumpCard: CardType): string[] {
+		const sequence = [];
+		sequence.push('Play trump ' + getCardDescription(trumpCard));
+		sequence.push('Draw opponent trumps if possible');
+		sequence.push('Use remaining trumps to control play');
+		return sequence;
+	}
+	
+	// Generate discard play sequence
+	function generateDiscardPlaySequence(discardCard: CardType): string[] {
+		const sequence = [];
+		sequence.push('Discard ' + getCardDescription(discardCard));
+		sequence.push('Preserve high cards in other suits');
+		sequence.push('Signal strength to partner if applicable');
+		return sequence;
+	}
+	
+	// Generate endgame sequence
+	function generateEndgameSequence(): string[] {
+		const sequence = [];
+		const tricksNeeded = 10 - declarerTricks;
+		sequence.push('Focus on making ' + tricksNeeded + ' more tricks');
+		sequence.push('Cash established winners first');
+		sequence.push('Use trump to control remaining tricks');
+		sequence.push('Preserve entries to both hands');
+		return sequence;
+	}
+	
+	// Generate overtrick sequence
+	function generateOvertrickSequence(): string[] {
+		const sequence = [];
+		sequence.push('Contract secured - play for maximum tricks');
+		sequence.push('Test opponent distributions');
+		sequence.push('Set up finesses for extra tricks');
+		sequence.push('Use trump efficiently for overtricks');
+		return sequence;
+	}
+	
+	// West opponent plays a card (automatic)
+	function playWestCard() {
+		console.log('West opponent playing card');
+		currentPlayerTurn = 'west';
+		
+		if (hand2Cards.length === 0) {
+			console.log('West has no cards left');
+			advanceToNextPlayer();
+			return;
+		}
+		
+		// Play a card following bridge rules
+		const selectedCard = playCardFollowingSuit(hand2Cards, 'West');
+		
+		if (!selectedCard) {
+			console.log('No card selected for West');
+			advanceToNextPlayer();
+			return;
+		}
+		
+		const cardId = selectedCard.suit + '-' + selectedCard.rank;
+		
+		// Add to current trick and track player
+		currentTrick.push(cardId);
+		trickCardPlayers.push('west');
+		
+		// Remove from West's hand
+		hand2Cards = hand2Cards.filter(card => !(card.suit === selectedCard.suit && card.rank === selectedCard.rank));
+		
+		console.log('West played:', cardId);
+		
+		// Advance to next player
+		advanceToNextPlayer();
+	}
+	
+	// Play a card following suit rules
+	function playCardFollowingSuit(hand: CardType[], player: string): CardType | null {
+		const leadSuit = getLeadSuit();
+		
+		if (leadSuit) {
+			// Must follow suit if possible
+			const suitCards = getCardsInSuit(hand, leadSuit);
+			if (suitCards.length > 0) {
+				// Play highest card of the suit
+				return suitCards[0];
+			}
+		}
+		
+		// Can play any card - play lowest card
+		const sortedHand = [...hand].sort((a, b) => {
+			const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+			return rankOrder[a.rank] - rankOrder[b.rank];
+		});
+		
+		return sortedHand[0] || null;
+	}
+	
+	// Advance to next player in turn
+	function advanceToNextPlayer() {
+		console.log('Advancing to next player from:', currentPlayerTurn);
+		
+		if (currentTrick.length >= 4) {
+			// Trick is complete - determine winner and update counters
+			const winner = determineTrickWinner();
+			console.log('Trick winner:', winner);
+			
+			// Update appropriate counter
+			if (winner === 'declarer' || winner === 'dummy') {
+				declarerTricks++;
+			} else {
+				opponentsTricks++;
+			}
+			
+			// Set next trick leader to the winner
+			currentPlayerTurn = winner;
+			console.log('Next trick leader:', currentPlayerTurn);
+			
+			// Store completed trick for display
+			completedTricks = [...completedTricks, currentTrick];
+			
+			trickPhase = 'waiting';
+			isWaitingForNextTrick = true;
+			feedbackMessage = 'Trick complete! Click "Next Trick" to continue';
+			setTimeout(() => {
+				feedbackMessage = '';
+			}, 3000);
+			
+			return;
+		}
+		
+		// Determine next player
+		switch (currentPlayerTurn) {
+			case 'west':
+				currentPlayerTurn = 'dummy';
+				console.log('Next player: Dummy (manual play required)');
+				trickPhase = 'manual_play';
+				feedbackMessage = 'Click a card in Dummy hand to play';
+				break;
+			case 'dummy':
+				currentPlayerTurn = 'east';
+				console.log('Next player: East (automatic play)');
+				playEastCard();
+				break;
+			case 'east':
+				currentPlayerTurn = 'declarer';
+				console.log('Next player: Declarer (manual play required)');
+				trickPhase = 'manual_play';
+				feedbackMessage = 'Click a card in Declarer hand to play';
+				break;
+			case 'declarer':
+				currentPlayerTurn = 'west';
+				console.log('Next player: West (automatic play)');
+				playWestCard();
+				break;
+		}
+	}
+	
+	// East opponent plays a card (automatic)
+	function playEastCard() {
+		console.log('East opponent playing card');
+		currentPlayerTurn = 'east';
+		
+		if (hand3Cards.length === 0) {
+			console.log('East has no cards left');
+			advanceToNextPlayer();
+			return;
+		}
+		
+		// Play a card following bridge rules
+		const selectedCard = playCardFollowingSuit(hand3Cards, 'East');
+		
+		if (!selectedCard) {
+			console.log('No card selected for East');
+			advanceToNextPlayer();
+			return;
+		}
+		
+		const cardId = selectedCard.suit + '-' + selectedCard.rank;
+		
+		// Add to current trick and track player
+		currentTrick.push(cardId);
+		trickCardPlayers.push('east');
+		
+		// Remove from East's hand
+		hand3Cards = hand3Cards.filter(card => !(card.suit === selectedCard.suit && card.rank === selectedCard.rank));
+		
+		console.log('East played:', cardId);
+		
+		// Advance to next player
+		advanceToNextPlayer();
+	}
+	
+	// Determine trick winner
+	function determineTrickWinner(): 'west' | 'dummy' | 'east' | 'declarer' {
+		if (currentTrick.length === 0) return 'west';
+		
+		const leadSuit = getLeadSuit();
+		if (!leadSuit) return 'west';
+		
+		let winningPlayer = currentPlayerTurn;
+		let winningCard = currentTrick[0];
+		
+		// Check each card in the trick
+		for (let i = 1; i < currentTrick.length; i++) {
+			const cardId = currentTrick[i];
+			const player = trickCardPlayers[i];
+			const [suit, rank] = cardId.split('-');
+			
+			// Trump beats everything
+			if (suit === 'hearts' && winningCard.split('-')[0] !== 'hearts') {
+				winningCard = cardId;
+				winningPlayer = player;
+			}
+			// Higher card of lead suit beats lower card
+			else if (suit === winningCard.split('-')[0]) {
+				const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+				if (rankOrder[rank] > rankOrder[winningCard.split('-')[1]]) {
+					winningCard = cardId;
+					winningPlayer = player;
+				}
+			}
+		}
+		
+		return winningPlayer;
+	}
+	
+	// Parse card ID into suit and rank
+	function parseCardId(cardId: string): CardType | null {
+		const parts = cardId.split('-');
+		if (parts.length !== 2) return null;
+		
+		const [suit, rank] = parts;
+		return {
+			suit: suit as 'hearts' | 'diamonds' | 'clubs' | 'spades',
+			rank: rank as '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A',
+			id: cardId
+		};
+	}
+	
+	// Update hints if enabled
+	function updateHintsIfEnabled() {
+		if (hintsEnabled) {
+			const hints = generateHints();
+			if (hints.length > 0) {
+				currentHint = hints[0].play;
+				hintDetails = hints[0].reasoning;
+				hintProbability = hints[0].probability;
+				hintSuccessRate = hints[0].successRate;
+				hintPlaySequence = hints[0].playSequence;
+			}
+		}
+	}
+	
+	// Initialize cards for bridge game
+	function initializeCards() {
+		// Create a standard deck of cards
+		const suits = ['spades', 'hearts', 'diamonds', 'clubs'] as const;
+		const ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as const;
+		
+		const deck: CardType[] = [];
+		for (const suit of suits) {
+			for (const rank of ranks) {
+				deck.push({
+					suit,
+					rank,
+					id: suit + '-' + rank
+				});
+			}
+		}
+		
+		// Shuffle and deal cards to 4 hands
+		const shuffled = [...deck].sort(() => Math.random() - 0.5);
+		hand1Cards = shuffled.slice(0, 13); // Dummy
+		hand2Cards = shuffled.slice(13, 26); // West
+		hand3Cards = shuffled.slice(26, 39); // East
+		hand4Cards = shuffled.slice(39, 52); // Declarer
+		
+		console.log('Cards dealt to 4 hands');
+	}
+	
+	// Check if card match is correct
+	function checkIsCorrectMatch(cardId: string): boolean {
+		// For bridge analysis, any card in the current trick is considered a correct match
+		return currentTrick.includes(cardId);
+	}
+	
+	// Return to setup phase
+	function returnToSetupPhase() {
+		console.log('Returning to setup phase');
+		trickPhase = 'setup';
+		currentTrick = [];
+		trickCardPlayers = [];
+		feedbackMessage = 'Ready for new trick';
+	}
+	
+	// Get border class for current player
+	function getCurrentPlayerBorderClass(player: string): string {
+		if (player === currentPlayerTurn) {
+			return 'border-4 border-blue-500 shadow-blue-500/50 shadow-lg';
+		}
+		return 'border border-gray-300';
+	}
+	
+	// Handle manual card click for bridge play
+	function handleManualCardClick(suit: string, rank: string, hand: 'dummy' | 'declarer') {
+		console.log('Manual card click: ' + suit + '-' + rank + ' from ' + hand);
+		
+		// Check if it's the correct player's turn
+		if (hand === 'dummy' && currentPlayerTurn !== 'dummy') {
+			console.log('Not Dummy\'s turn');
+			return;
+		}
+		if (hand === 'declarer' && currentPlayerTurn !== 'declarer') {
+			console.log('Not Declarer\'s turn');
+			return;
+		}
+		
+		const cardId = suit + '-' + rank;
+		
+		// Check if player must follow suit
+		const leadSuit = getLeadSuit();
+		if (leadSuit) {
+			// Get the player's hand
+			const playerHand = hand === 'dummy' ? hand1Cards : hand4Cards;
+			
+			// Check if player has cards in the lead suit
+			const suitCards = getCardsInSuit(playerHand, leadSuit);
+			if (suitCards.length > 0 && suit !== leadSuit) {
+				console.log('Must follow suit! Play ' + leadSuit + ' card.');
+				feedbackMessage = 'You must follow suit! Play a ' + leadSuit + ' card.';
+				setTimeout(() => {
+					feedbackMessage = '';
+				}, 3000);
+				return;
+			}
+		}
+		
+		// Add card to current trick
+		currentTrick.push(cardId);
+		trickCardPlayers.push(hand);
+		
+		// Remove card from hand
+		if (hand === 'dummy') {
+			hand1Cards = hand1Cards.filter(card => !(card.suit === suit && card.rank === rank));
+		} else {
+			hand4Cards = hand4Cards.filter(card => !(card.suit === suit && card.rank === rank));
+		}
+		
+		console.log('Card played:', cardId);
+		
+		// Advance to next player
+		advanceToNextPlayer();
+	}
+	
+	// Check if card is flipped
+	function isCardFlipped(cardId: string): boolean {
+		return handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId);
+	}
+
+	// Generate hints for current game state
+	function generateHints() {
+		const hints = [];
+		
+		// Generate hints based on current game state
+		if (trickPhase === 'manual_play') {
+			const playerHand = currentPlayerTurn === 'declarer' ? hand4Cards : 
+			                  currentPlayerTurn === 'dummy' ? hand1Cards : 
+			                  currentPlayerTurn === 'west' ? hand2Cards : hand3Cards;
+			
+			const leadSuit = getLeadSuit();
+			if (leadSuit) {
+				// Must follow suit
+				const suitCards = getCardsInSuit(playerHand, leadSuit);
+				if (suitCards.length > 0) {
+					for (const card of suitCards.slice(0, 2)) {
+						hints.push({
+							play: 'Play ' + getCardDescription(card),
+							reasoning: 'Must follow suit with ' + leadSuit,
+							probability: 75,
+							successRate: 'Medium',
+							playSequence: generateFollowPlaySequence(card, leadSuit)
+						});
+					}
+				} else {
+					// Can play any card
+					const trumpCards = getCardsInSuit(playerHand, 'hearts');
+					if (trumpCards.length > 0) {
+						hints.push({
+							play: 'Play trump ' + getCardDescription(trumpCards[0]),
+							reasoning: 'Cannot follow suit, can play trump',
+							probability: 85,
+							successRate: 'High',
+							playSequence: generateTrumpPlaySequence(trumpCards[0])
+						});
+					}
+				}
+			} else {
+				// Leading - suggest highest cards
+				for (const suit of ['spades', 'diamonds', 'clubs'] as const) {
+					const suitCards = getCardsInSuit(playerHand, suit);
+					if (suitCards.length > 0) {
+						hints.push({
+							play: 'Lead ' + getCardDescription(suitCards[0]),
+							reasoning: 'Good lead from ' + suit,
+							probability: 70,
+							successRate: 'Medium',
+							playSequence: generateLeadPlaySequence(suit, { highest: suitCards[0], count: suitCards.length, honorCount: 0 })
+						});
+					}
+				}
+			}
+		}
+		
+		return hints;
+	}
+
 	// BPA-1 Hint System Helper Functions
 	
 	// Analyze hand suits for leading decisions
-	function analyzeHandSuits(hand: Card[]) {
+	function analyzeHandSuits(hand: CardType[]) {
 		const analysis: Record<string, {
 			count: number;
 			honorCount: number;
-			highest: Card;
-			lowest: Card;
-			sequence: Card[];
+			highest: CardType;
+			lowest: CardType;
+			sequence: CardType[];
 		}> = {};
 		
 		for (const suit of ['spades', 'hearts', 'diamonds', 'clubs'] as const) {
@@ -377,13 +879,13 @@
 			});
 			
 			const honors = suitCards.filter(card => ['A', 'K', 'Q', 'J', '10'].includes(card.rank));
-			const sequence = findSequences(suitCards);
+			const sequence = findSequences(suitCards.map(card => ({...card, id: card.suit + '-' + card.rank})));
 			
 			analysis[suit] = {
 				count: suitCards.length,
 				honorCount: honors.length,
-				highest: suitCards[0] || null,
-				lowest: suitCards[suitCards.length - 1] || null,
+				highest: suitCards[0] ? {...suitCards[0], id: suitCards[0].suit + '-' + suitCards[0].rank} : null,
+				lowest: suitCards[suitCards.length - 1] ? {...suitCards[suitCards.length - 1], id: suitCards[suitCards.length - 1].suit + '-' + suitCards[suitCards.length - 1].rank} : null,
 				sequence: sequence
 			};
 		}
@@ -392,7 +894,7 @@
 	}
 	
 	// Find sequences in suit
-	function findSequences(cards: Card[]): Card[] {
+	function findSequences(cards: CardType[]): CardType[] {
 		if (cards.length < 2) return [];
 		
 		const sequences = [];
@@ -445,7 +947,7 @@
 	}
 	
 	// Calculate follow suit success probability
-	function calculateFollowSuccessProbability(card: Card, leadSuit: string): number {
+	function calculateFollowSuccessProbability(card: CardType, leadSuit: string): number {
 		let probability = 50; // Base probability
 		
 		// Adjust for card rank
@@ -473,7 +975,7 @@
 	}
 	
 	// Calculate trump success probability
-	function calculateTrumpSuccessProbability(trumpCard: Card): number {
+	function calculateTrumpSuccessProbability(trumpCard: CardType): number {
 		let probability = 60; // Base probability for trump
 		
 		// Adjust for trump rank
@@ -505,7 +1007,7 @@
 	}
 	
 	// Calculate discard success probability
-	function calculateDiscardSuccessProbability(discardCard: Card): number {
+	function calculateDiscardSuccessProbability(discardCard: CardType): number {
 		let probability = 40; // Base probability for discard
 		
 		// Prefer discarding low cards
@@ -539,936 +1041,79 @@
 	}
 	
 	// Get card description
-	function getCardDescription(card: Card): string {
+	function getCardDescription(card: CardType): string {
 		if (!card) return 'Unknown';
-		return `${card.rank} of ${card.suit}`;
+		return card.rank + ' of ' + card.suit;
 	}
 	
 	// Get lead reasoning
 	function getLeadReasoning(suitInfo: any): string {
 		if (suitInfo.sequence.length >= 2) {
-			return `Lead top of sequence to establish suit.`;
+			return 'Lead top of sequence to establish suit.';
 		}
 		if (suitInfo.count >= 5) {
-			return `Long suit - lead to establish length.`;
+			return 'Long suit - lead to establish length.';
 		}
 		if (suitInfo.honorCount >= 2) {
-			return `Strong suit with honors - good lead potential.`;
+			return 'Strong suit with honors - good lead potential.';
 		}
-		return `Safe lead from 4th highest card.`;
+		return 'Safe lead from 4th highest card.';
 	}
 	
 	// Get follow reasoning
-	function getFollowReasoning(card: Card, leadSuit: string, suitCards: Card[]): string {
+	function getFollowReasoning(card: CardType, leadSuit: string, suitCards: CardType[]): string {
 		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
 		const cardRank = rankOrder[card.rank];
 		const isHighest = cardRank === Math.max(...suitCards.map(c => rankOrder[c.rank]));
 		
 		if (isHighest && cardRank >= 12) {
-			return `Play high honor to potentially win trick.`;
+			return 'Play high honor to potentially win trick.';
 		}
 		if (cardRank <= 5) {
-			return `Play low card - conserve high cards for later.`;
+			return 'Play low card - conserve high cards for later.';
 		}
 		if (suitCards.length === 2) {
-			return `Second card - play appropriately based on partnership.`;
+			return 'Second card - play appropriately based on partnership.';
 		}
-		return `Standard follow suit play.`;
+		return 'Standard follow suit play.';
 	}
 	
 	// Get trump reasoning
-	function getTrumpReasoning(trumpCard: Card, trumpCards: Card[]): string {
+	function getTrumpReasoning(trumpCard: CardType, trumpCards: CardType[]): string {
 		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
 		const cardRank = rankOrder[trumpCard.rank];
 		const isHighest = cardRank === Math.max(...trumpCards.map(c => rankOrder[c.rank]));
 		
 		if (isHighest) {
-			return `Play highest trump to win trick.`;
+			return 'Play highest trump to win trick.';
 		}
 		if (trumpCards.length > 3) {
-			return `Plenty of trumps - can afford to play this one.`;
+			return 'Plenty of trumps - can afford to play this one.';
 		}
-		return `Conserve trumps - play low trump.`;
+		return 'Conserve trumps - play low trump.';
 	}
 	
 	// Get discard reasoning
-	function getDiscardReasoning(discardCard: Card, nonTrumpCards: Card[]): string {
+	function getDiscardReasoning(discardCard: CardType, nonTrumpCards: CardType[]): string {
 		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
 		const cardRank = rankOrder[discardCard.rank];
 		
 		if (cardRank <= 3) {
-			return `Discard lowest card - no value.`;
+			return 'Discard lowest card - no value.';
 		}
 		if (cardRank <= 8) {
-			return `Discard low card - minimal value.`;
+			return 'Discard low card - minimal value.';
 		}
-		return `Discard from longest suit to preserve short suits.`;
+		return 'Discard from longest suit to preserve short suits.';
 	}
 	
 	// Generate play sequences
 	function generateLeadPlaySequence(suit: string, suitInfo: any): string[] {
 		const sequence = [];
-		sequence.push(`Lead ${getCardDescription(suitInfo.highest)} from ${suit}`);
-		sequence.push(`Watch opponent responses to gauge strength`);
-		sequence.push(`Plan to establish suit with subsequent leads`);
+		sequence.push('Lead ' + getCardDescription(suitInfo.highest) + ' from ' + suit);
+		sequence.push('Watch opponent responses to gauge strength');
+		sequence.push('Plan to establish suit with subsequent leads');
 		return sequence;
-	}
-	
-	function generateFollowPlaySequence(card: Card, leadSuit: string): string[] {
-		const sequence = [];
-		sequence.push(`Play ${getCardDescription(card)} to follow suit`);
-		sequence.push(`Observe partner's card if applicable`);
-		sequence.push(`Plan next trick based on outcome`);
-		return sequence;
-	}
-	
-	function generateTrumpPlaySequence(trumpCard: Card): string[] {
-		const sequence = [];
-		sequence.push(`Play trump ${getCardDescription(trumpCard)}`);
-		sequence.push(`Draw opponent trumps if possible`);
-		sequence.push(`Use remaining trumps to control play`);
-		return sequence;
-	}
-	
-	function generateDiscardPlaySequence(discardCard: Card): string[] {
-		const sequence = [];
-		sequence.push(`Discard ${getCardDescription(discardCard)}`);
-		sequence.push(`Signal strength/weakness to partner`);
-		sequence.push(`Preserve key cards for future tricks`);
-		return sequence;
-	}
-	
-	function generateEndgameSequence(): string[] {
-		const sequence = [];
-		const tricksNeeded = 10 - declarerTricks;
-		sequence.push(`Focus on making ${tricksNeeded} more tricks`);
-		sequence.push(`Cash established winners first`);
-		sequence.push(`Use trump to control remaining tricks`);
-		sequence.push(`Preserve entries to both hands`);
-		return sequence;
-	}
-	
-	function generateOvertrickSequence(): string[] {
-		const sequence = [];
-		sequence.push(`Contract secured - play for maximum tricks`);
-		sequence.push(`Test opponent distributions`);
-		sequence.push(`Set up finesses for extra tricks`);
-		sequence.push(`Use trump efficiently for overtricks`);
-		return sequence;
-	}
-	
-	// Parse card ID to Card object
-	function parseCardId(cardId: string): Card | null {
-		const parts = cardId.split('-');
-		if (parts.length !== 2) return null;
-		
-		return {
-			suit: parts[0] as Suit,
-			rank: parts[1]
-		};
-	}
-	
-	// Update hint generation calls in existing functions
-	function updateHintsIfEnabled() {
-		if (hintsEnabled && gameStarted && !gameCompleted) {
-			generateHint();
-		}
-	}
-
-	// Simple test counter
-	let buttonClickCount = $state<number>(0);
-
-	// Basic test - should always show current state
-	$effect(() => {
-		console.log('🧪 Component test - gameStarted:', gameStarted);
-		console.log('🧪 Component test - gameCompleted:', gameCompleted);
-		console.log('🧪 Component test - flippedCardIds:', flippedCardIds);
-		console.log('🧪 Component test - correctlyMatchedCards:', correctlyMatchedCards);
-		
-		// Auto-update hints when game state changes
-		if (hintsEnabled && gameStarted && !gameCompleted) {
-			updateHintsIfEnabled();
-		}
-	});
-
-	// Card data for Game 3-2 (4 hands)
-	let hand1Cards = $state<BridgeCard[]>([]);
-	let hand2Cards = $state<BridgeCard[]>([]);
-	let hand3Cards = $state<BridgeCard[]>([]);
-	let hand4Cards = $state<BridgeCard[]>([]);
-	let allPossibleCards = $state<BridgeCard[]>([]);
-
-	// Initialize cards with bridge-specific deal logic
-	function initializeCards() {
-		console.log('🎴 Initializing Bridge Play Analysis cards with heart requirements');
-		
-		// Create all 52 cards
-		const suits = ['spades', 'hearts', 'diamonds', 'clubs'] as const;
-		const ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as const;
-		
-		allPossibleCards = [];
-		for (const suit of suits) {
-			for (const rank of ranks) {
-				allPossibleCards.push({ suit, rank });
-			}
-		}
-
-		// Bridge-specific deal logic for heart requirements
-		const heartHonors = ['A', 'K', 'Q', 'J', '10']; // Updated to include 10
-		const allHeartCards = allPossibleCards.filter(card => card.suit === 'hearts');
-		const nonHeartCards = allPossibleCards.filter(card => card.suit !== 'hearts');
-		
-		// Step 1: Deal heart honors to Declarer and Dummy (minimum 3 total)
-		const availableHeartHonors = allHeartCards.filter(card => heartHonors.includes(card.rank));
-		const shuffledHonors = [...availableHeartHonors].sort(() => Math.random() - 0.5);
-		
-		// Randomly select 3-5 honors (minimum 3, maximum all 5)
-		const honorCount = Math.floor(Math.random() * 3) + 3; // 3, 4, or 5 honors
-		const selectedHonors = shuffledHonors.slice(0, honorCount);
-		
-		// Randomly split honors between Declarer and Dummy
-		const declarerHonors: typeof selectedHonors = [];
-		let dummyHonors: typeof selectedHonors = [];
-		
-		selectedHonors.forEach(honor => {
-			if (Math.random() < 0.5) {
-				declarerHonors.push(honor);
-			} else {
-				dummyHonors.push(honor);
-			}
-		});
-		
-		// Step 2: Add additional hearts to reach exactly 7-9 total hearts between Declarer and Dummy
-		const nonHonorHearts = allHeartCards.filter(card => 
-			!heartHonors.includes(card.rank)
-		);
-		
-		// Step 3: Deal remaining cards to complete the hands
-		const remainingCards = allPossibleCards.filter(card => 
-			!selectedHonors.some(honor => honor.suit === card.suit && honor.rank === card.rank)
-		);
-		
-		// Shuffle remaining cards
-		const shuffledRemaining = [...remainingCards].sort(() => Math.random() - 0.5);
-		
-		// Add cards to make 13 cards per hand
-		const declarerNeeded = 13 - declarerHonors.length;
-		const dummyNeeded = 13 - dummyHonors.length;
-		
-		// Deal cards to Declarer and Dummy (ensure exactly 13 cards each)
-		hand4Cards = [...declarerHonors];
-		hand1Cards = [...dummyHonors];
-		
-		// Add remaining cards to make exactly 13 per hand
-		let cardIndex = 0;
-		
-		// Fill Declarer hand to 13 cards
-		while (hand4Cards.length < 13 && cardIndex < shuffledRemaining.length) {
-			hand4Cards.push(shuffledRemaining[cardIndex++]);
-		}
-		
-		// Fill Dummy hand to 13 cards
-		while (hand1Cards.length < 13 && cardIndex < shuffledRemaining.length) {
-			hand1Cards.push(shuffledRemaining[cardIndex++]);
-		}
-		
-		// Deal remaining cards to West and East (13 each)
-		hand2Cards = shuffledRemaining.slice(cardIndex, cardIndex + 13);  // West
-		cardIndex += 13;
-		hand3Cards = shuffledRemaining.slice(cardIndex, cardIndex + 13);  // East
-		
-		
-		// CRITICAL: Ensure Declarer has at least 5 hearts
-		const declarerHearts = hand4Cards.filter(c => c.suit === 'hearts').length;
-		if (declarerHearts < 5) {
-			console.log('🔧 CRITICAL: Declarer only has', declarerHearts, 'hearts, needs 5+');
-			// Move hearts from Dummy to Declarer, maintaining 13-card hand sizes
-			let dummyHearts = hand1Cards.filter(c => c.suit === 'hearts');
-			const heartsNeeded = 5 - declarerHearts;
-			
-			for (let i = 0; i < heartsNeeded && i < dummyHearts.length; i++) {
-				const heartToMove = dummyHearts[i];
-				
-				// Remove heart from Dummy
-				hand1Cards = hand1Cards.filter(c => c !== heartToMove);
-				
-				// Remove a non-heart from Declarer to maintain 13 cards
-				const declarerNonHearts = hand4Cards.filter(c => c.suit !== 'hearts');
-				if (declarerNonHearts.length > 0) {
-					const nonHeartToRemove = declarerNonHearts[0];
-					hand4Cards = hand4Cards.filter(c => c !== nonHeartToRemove);
-					
-					// Add the removed non-heart to Dummy to maintain 13 cards
-					hand1Cards = [...hand1Cards, nonHeartToRemove];
-				}
-				
-				// Add the heart to Declarer
-				hand4Cards = [...hand4Cards, heartToMove];
-				console.log('🔧 Moving heart from Dummy to Declarer:', heartToMove.rank);
-			}
-		}
-		
-		// CRITICAL: Ensure Declarer+Dummy have at least 8 hearts total
-		const totalHeartsDeclarerDummy = hand4Cards.filter(c => c.suit === 'hearts').length + 
-		                                   hand1Cards.filter(c => c.suit === 'hearts').length;
-		
-		if (totalHeartsDeclarerDummy < 8) {
-			console.log('🔧 CRITICAL: Declarer+Dummy only have', totalHeartsDeclarerDummy, 'hearts, need 8+');
-			// Need to move hearts from opponents to partnership
-			const heartsNeeded = 8 - totalHeartsDeclarerDummy;
-			let heartsMoved = 0;
-			
-			// Try to get hearts from West first
-			const westHearts = hand2Cards.filter(c => c.suit === 'hearts');
-			for (let i = 0; i < westHearts.length && heartsMoved < heartsNeeded; i++) {
-				const heartToMove = westHearts[i];
-				
-				// Move heart from West to Dummy
-				hand2Cards = hand2Cards.filter(c => c !== heartToMove);
-				hand1Cards = [...hand1Cards, heartToMove];
-				
-				// Remove a non-heart from Dummy to maintain 13 cards
-				const dummyNonHearts = hand1Cards.filter(c => c.suit !== 'hearts');
-				if (dummyNonHearts.length > 0) {
-					const nonHeartToRemove = dummyNonHearts[0];
-					hand1Cards = hand1Cards.filter(c => c !== nonHeartToRemove);
-					hand2Cards = [...hand2Cards, nonHeartToRemove];
-				}
-				
-				console.log('🔧 Moving heart from West to Dummy:', heartToMove.rank);
-				heartsMoved++;
-			}
-			
-			// If still need more hearts, get from East
-			if (heartsMoved < heartsNeeded) {
-				const eastHearts = hand3Cards.filter(c => c.suit === 'hearts');
-				for (let i = 0; i < eastHearts.length && heartsMoved < heartsNeeded; i++) {
-					const heartToMove = eastHearts[i];
-					
-					// Move heart from East to Dummy
-					hand3Cards = hand3Cards.filter(c => c !== heartToMove);
-					hand1Cards = [...hand1Cards, heartToMove];
-					
-					// Remove a non-heart from Dummy to maintain 13 cards
-					const dummyNonHearts = hand1Cards.filter(c => c.suit !== 'hearts');
-					if (dummyNonHearts.length > 0) {
-						const nonHeartToRemove = dummyNonHearts[0];
-						hand1Cards = hand1Cards.filter(c => c !== nonHeartToRemove);
-						hand3Cards = [...hand3Cards, nonHeartToRemove];
-					}
-					
-					console.log('🔧 Moving heart from East to Dummy:', heartToMove.rank);
-					heartsMoved++;
-				}
-			}
-		}
-		
-		// Log final deal statistics
-		const totalHonorsDeclarerDummy = [...hand4Cards, ...hand1Cards]
-			.filter(c => c.suit === 'hearts' && ['A', 'K', 'Q', 'J', '10'].includes(c.rank))
-			.length;
-		
-		console.log('🎴 Total Hearts Declarer+Dummy:', totalHeartsDeclarerDummy, '(target: 7-9)');
-		console.log('🎴 Total Heart Honors Declarer+Dummy:', totalHonorsDeclarerDummy, '(target: min 3)');
-		console.log('🎴 Total cards distributed:', hand1Cards.length + hand2Cards.length + hand3Cards.length + hand4Cards.length);
-	}
-
-	// Return to setup phase for new deal
-	function returnToSetupPhase() {
-		console.log('🔄 Returning to setup phase for new deal');
-		trickPhase = 'setup';
-		feedbackMessage = 'Click "Start Missing Trump Challenge" to begin with a new deal';
-		isWaitingForNextTrick = false;
-	}
-	
-	// Start the game
-	function startGame() {
-		// CRITICAL: Validate deal before starting gameplay
-		const declarerPoints = calculateHandPoints(hand4Cards);
-		const dummyPoints = calculateDummyPoints(hand1Cards);
-		const totalPoints = declarerPoints + dummyPoints;
-		const validation = validateDeal(hand4Cards, hand1Cards);
-		
-		if (!validation.isValid) {
-			console.error('❌ Invalid deal - cannot start game');
-			console.error('Validation errors:', validation.errors);
-			feedbackMessage = 'Invalid deal - please reset and try again';
-			return;
-		}
-		
-		console.log('🎮 Starting Bridge Play Analysis');
-		console.log('🎴 Declarer and Dummy cards set as face-up:', hand4Cards.length + hand1Cards.length, 'cards');
-		
-		// Set game state
-		gameStarted = true;
-		gameCompleted = false;
-		allCardsFlippedOnce = false;
-		lastCardFlippedBack = false;
-		
-		// Reset bridge play counters
-		opponentsTricks = 0;
-		declarerTricks = 0;
-		
-		// Reset trick-based state
-		currentTrick = [];
-		trickCardPlayers = []; // Clear player tracking
-		currentTrickIndex = 0;
-		trickPhase = 'setup'; // Keep in setup phase, let setupFaceUpCards handle transition
-		
-		// Set up face-up cards for declarer and dummy
-		setupFaceUpCards();
-		// Note: selectNextCardForTrick() should NOT be called here - it removes cards from hands
-	}
-	
-	// Set up face-up cards for declarer and dummy
-	function setupFaceUpCards() {
-		const declarerAndDummyCards = [...hand1Cards, ...hand4Cards];
-		correctlyMatchedCards = declarerAndDummyCards.map(card => `${card.suit}-${card.rank}`);
-		console.log('🎴 Declarer and Dummy cards set as face-up:', correctlyMatchedCards.length, 'cards');
-		
-		// Add Declarer and Dummy cards to handCardFlippedIds so they appear face-up
-		handCardFlippedIds = [...correctlyMatchedCards];
-		
-		// Start interactive gameplay
-		console.log('🃏 Starting interactive bridge gameplay');
-		trickPhase = 'waiting';
-		currentSetTricks = [];
-		tricksInCurrentSet = 0;
-		currentTrick = [];
-		currentTrickIndex = 0;
-		isWaitingForNextTrick = true;
-		currentPlayerTurn = 'west';
-		feedbackMessage = 'Click "Next Trick" to begin playing cards';
-		setTimeout(() => {
-			feedbackMessage = '';
-		}, 3000);
-	}
-	
-	// Check if card is correctly matched
-	function checkIsCorrectMatch(cardId: string): boolean {
-		return correctlyMatchedCards.includes(cardId);
-	}
-
-	// Next Trick button handler
-	function handleNextTrick() {
-		console.log('🎯 Next Trick clicked - starting new trick');
-		console.log('🔍 Debug: isWaitingForNextTrick before =', isWaitingForNextTrick);
-		isWaitingForNextTrick = false;
-		console.log('🔍 Debug: isWaitingForNextTrick after =', isWaitingForNextTrick, '(button should disappear)');
-		trickPhase = 'playing';
-		
-		// Clear current trick for new trick (MOVED from trick completion logic)
-		console.log('🗑️ Clearing previous trick cards - ready for new trick');
-		currentTrick = [];
-		trickCardPlayers = []; // Clear player tracking
-		currentTrickIndex = 0;
-		
-		// Use the winner of previous trick as leader (already set in currentPlayerTurn)
-		console.log('👑 Trick leader:', currentPlayerTurn);
-		
-		// Start with the current player (winner of previous trick) playing first
-		if (currentPlayerTurn === 'west') {
-			playWestCard();
-		} else if (currentPlayerTurn === 'east') {
-			playEastCard();
-		} else if (currentPlayerTurn === 'dummy') {
-			playDummyCard();
-		} else if (currentPlayerTurn === 'declarer') {
-			playDeclarerCard();
-		}
-		
-		// Update hints if enabled
-		updateHintsIfEnabled();
-	}
-
-	// Helper function to get the lead suit of the current trick
-	function getLeadSuit(): string | null {
-		if (currentTrick.length === 0) return null;
-		
-		// Find the first card played (lead card)
-		const leadCardId = currentTrick[0];
-		const [leadSuit] = leadCardId.split('-');
-		return leadSuit;
-	}
-
-	// Helper function to get cards in a specific suit
-	function getCardsInSuit(hand: BridgeCard[], suit: string): BridgeCard[] {
-		return hand.filter(card => card.suit === suit);
-	}
-
-	// Helper function to play a card following bridge rules
-	function playCardFollowingSuit(hand: BridgeCard[], playerName: string): BridgeCard | null {
-		if (hand.length === 0) return null;
-		
-		const leadSuit = getLeadSuit();
-		
-		// If this is the first card played, any card can be played
-		if (!leadSuit) {
-			return hand[Math.floor(Math.random() * hand.length)];
-		}
-		
-		// Check if player has cards in the lead suit
-		const suitCards = getCardsInSuit(hand, leadSuit);
-		
-		if (suitCards.length > 0) {
-			// Must follow suit - play a random card from the lead suit
-			console.log(`🎯 ${playerName} must follow suit: ${leadSuit} (${suitCards.length} cards available)`);
-			return suitCards[Math.floor(Math.random() * suitCards.length)];
-		} else {
-			// Can't follow suit - play any card
-			console.log(`🎯 ${playerName} cannot follow suit ${leadSuit} - playing any card`);
-			return hand[Math.floor(Math.random() * hand.length)];
-		}
-	}
-
-	// West opponent plays a card (automatic)
-	function playWestCard() {
-		console.log('🃏 West opponent playing card');
-		currentPlayerTurn = 'west';
-		
-		if (hand2Cards.length === 0) {
-			console.log('❌ West has no cards left');
-			advanceToNextPlayer();
-			return;
-		}
-		
-		// Play a card following bridge rules
-		const selectedCard = playCardFollowingSuit(hand2Cards, 'West');
-		
-		if (!selectedCard) {
-			console.log('❌ No card selected for West');
-			advanceToNextPlayer();
-			return;
-		}
-		
-		const cardId = `${selectedCard.suit}-${selectedCard.rank}`;
-		
-		// Add to current trick and track player
-		currentTrick.push(cardId);
-		trickCardPlayers.push('west');
-		
-		// Remove from West's hand
-		hand2Cards = hand2Cards.filter(card => !(card.suit === selectedCard.suit && card.rank === selectedCard.rank));
-		
-		console.log('🎴 West played:', cardId);
-		console.log('🎴 Current trick:', currentTrick);
-		console.log('🎴 Trick players:', trickCardPlayers);
-		
-		// Advance to next player
-		advanceToNextPlayer();
-	}
-
-	// Determine trick winner based on bridge rules
-	function determineTrickWinner(): 'west' | 'dummy' | 'east' | 'declarer' {
-		if (currentTrick.length !== 4) {
-			console.log('🚫 Error: Cannot determine winner with', currentTrick.length, 'cards');
-			return 'west'; // Default fallback
-		}
-		
-		console.log('🎯 Determining winner for trick:', currentTrick);
-		
-		// Get the lead suit (first card played)
-		const [leadSuit, leadRank] = currentTrick[0].split('-');
-		console.log('🃏 Lead suit:', leadSuit, 'Lead rank:', leadRank);
-		
-		// Track cards played by each player
-		const cardsByPlayer: { [key: string]: { suit: string, rank: string, cardId: string } } = {};
-		
-		// Map trick cards to players using actual trickCardPlayers order
-		// trickCardPlayers contains the actual order: ['dummy', 'east', 'declarer', 'west']
-		currentTrick.forEach((cardId, index) => {
-			const [suit, rank] = cardId.split('-');
-			const player = trickCardPlayers[index]; // Use actual player order
-			cardsByPlayer[player] = { suit, rank, cardId };
-		});
-		
-		// Determine winning card according to bridge rules
-		let winningPlayer = trickCardPlayers[0]; // Start with lead player (actual order)
-		let winningCard = cardsByPlayer[winningPlayer];
-		
-		// Card rank order (high to low)
-		const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
-		
-		// First, check if any trump (hearts) were played
-		const trumpCards = [];
-		for (const player of trickCardPlayers) {
-			const card = cardsByPlayer[player];
-			if (card.suit === 'hearts') {
-				trumpCards.push({ player, card });
-			}
-		}
-		
-		if (trumpCards.length > 0) {
-			// Trump was played - find highest trump
-			let highestTrump = trumpCards[0];
-			for (const trump of trumpCards) {
-				if (rankOrder[trump.card.rank] > rankOrder[highestTrump.card.rank]) {
-					highestTrump = trump;
-				}
-			}
-			winningPlayer = highestTrump.player;
-			winningCard = highestTrump.card;
-			console.log('👑 Trump wins:', winningPlayer, 'with', winningCard.rank, 'of hearts');
-		} else {
-			// No trump played - find highest card of lead suit
-			const leadSuitCards = [];
-			for (const player of trickCardPlayers) {
-				const card = cardsByPlayer[player];
-				if (card.suit === leadSuit) {
-					leadSuitCards.push({ player, card });
-				}
-			}
-			
-			if (leadSuitCards.length > 0) {
-				// Find highest card of lead suit
-				let highestLeadSuit = leadSuitCards[0];
-				for (const leadSuitCard of leadSuitCards) {
-					if (rankOrder[leadSuitCard.card.rank] > rankOrder[highestLeadSuit.card.rank]) {
-						highestLeadSuit = leadSuitCard;
-					}
-				}
-				winningPlayer = highestLeadSuit.player;
-				winningCard = highestLeadSuit.card;
-				console.log('📈 Highest lead suit:', winningPlayer, 'with', winningCard.rank, 'of', leadSuit);
-			}
-		}
-		
-		console.log('🏆 Winning card:', winningCard.cardId, 'by', winningPlayer);
-		return winningPlayer;
-	}
-	
-	// Advance to next player in turn
-	function advanceToNextPlayer() {
-		console.log('🔄 Advancing to next player from:', currentPlayerTurn);
-		console.log('🔍 Debug: currentTrick.length =', currentTrick.length, 'currentTrick =', currentTrick);
-		
-		if (currentTrick.length >= 4) {
-			// Trick is complete - determine winner and update counters
-			console.log('✅ Trick complete with 4 cards');
-			
-			// Determine trick winner
-			const winner = determineTrickWinner();
-			console.log('🏆 Trick winner:', winner);
-			
-			// Update appropriate counter
-			if (winner === 'declarer' || winner === 'dummy') {
-				declarerTricks++;
-				console.log('📈 Declarer/Dummy tricks:', declarerTricks);
-			} else {
-				opponentsTricks++;
-				console.log('📈 Opponents tricks:', opponentsTricks);
-			}
-			
-			// Check if all 13 tricks have been played (GAME OVER)
-			const totalTricks = declarerTricks + opponentsTricks;
-			if (totalTricks >= 13) {
-				console.log('🎮 GAME OVER! All 13 tricks completed');
-				console.log('📊 Final Score: Declarer/Dummy', declarerTricks, 'vs Opponents', opponentsTricks);
-				
-				// Set game state to completed
-				gameCompleted = true;
-				trickPhase = 'completed';
-				isWaitingForNextTrick = false; // Hide "Next Trick" button forever
-				feedbackMessage = 'Game Over! All 13 tricks have been played.';
-				setTimeout(() => {
-					feedbackMessage = '';
-				}, 5000);
-				
-				console.log('🎯 Game completion finished - Next Trick button disabled');
-				return; // Exit early - game is over
-			}
-			
-			// Set next trick leader to the winner
-			currentPlayerTurn = winner;
-			console.log('👑 Next trick leader:', currentPlayerTurn);
-			
-			// Store completed trick for display
-			completedTricks = [...completedTricks, ...currentTrick];
-			
-			// NOTE: Keep current trick visible until "Next Trick" is clicked
-			// currentTrick = []; // MOVED to handleNextTrick()
-			// trickCardPlayers = []; // MOVED to handleNextTrick()
-			// currentTrickIndex = 0; // MOVED to handleNextTrick()
-			
-			trickPhase = 'waiting';
-			isWaitingForNextTrick = true;
-			console.log('🔍 Debug: isWaitingForNextTrick set to', isWaitingForNextTrick, '(button should appear)');
-			feedbackMessage = `Trick complete! ${winner === 'declarer' || winner === 'dummy' ? 'Declarer/Dummy' : 'Opponents'} won the trick. Click "Next Trick" to continue`;
-			setTimeout(() => {
-				feedbackMessage = '';
-			}, 3000);
-			
-			console.log('🎯 Trick completion finished - keeping current trick visible until Next Trick clicked');
-			return; // Exit early after trick completion
-		}
-		
-		// Determine next player
-		// Check if this is the start of a new trick (current player is the leader)
-		if (currentTrick.length === 0) {
-			// This is the start of a new trick - current player should lead
-			console.log('🃏 Starting new trick -', currentPlayerTurn, 'should lead');
-			if (currentPlayerTurn === 'west') {
-				playWestCard();
-			} else if (currentPlayerTurn === 'dummy') {
-				playDummyCard();
-			} else if (currentPlayerTurn === 'east') {
-				playEastCard();
-			} else if (currentPlayerTurn === 'declarer') {
-				playDeclarerCard();
-			}
-		} else {
-			// This is during a trick - determine next player
-			switch (currentPlayerTurn) {
-				case 'west':
-					currentPlayerTurn = 'dummy';
-					console.log('🃏 Next player: Dummy (manual play required)');
-					trickPhase = 'manual_play';
-					feedbackMessage = 'Click a card in Dummy hand to play';
-					setTimeout(() => {
-						feedbackMessage = '';
-					}, 2000);
-					break;
-				case 'dummy':
-					currentPlayerTurn = 'east';
-					console.log('🃏 Next player: East (automatic play)');
-					playEastCard();
-					break;
-				case 'east':
-					currentPlayerTurn = 'declarer';
-					console.log('🃏 Next player: Declarer (manual play required)');
-					trickPhase = 'manual_play';
-					feedbackMessage = 'Click a card in Declarer hand to play';
-					setTimeout(() => {
-						feedbackMessage = '';
-					}, 2000);
-					break;
-				case 'declarer':
-					currentPlayerTurn = 'west';
-					console.log('🃏 Next player: West (automatic play)');
-					playWestCard();
-					break;
-			}
-		}
-	}
-
-	// East opponent plays a card (automatic)
-	function playEastCard() {
-		console.log('🃏 East opponent playing card');
-		currentPlayerTurn = 'east';
-		
-		if (hand3Cards.length === 0) {
-			console.log('❌ East has no cards left');
-			advanceToNextPlayer();
-			return;
-		}
-		
-		// Play a card following bridge rules
-		const selectedCard = playCardFollowingSuit(hand3Cards, 'East');
-		
-		if (!selectedCard) {
-			console.log('❌ No card selected for East');
-			advanceToNextPlayer();
-			return;
-		}
-		
-		const cardId = `${selectedCard.suit}-${selectedCard.rank}`;
-		
-		// Add to current trick and track player
-		currentTrick.push(cardId);
-		trickCardPlayers.push('east');
-		
-		// Remove from East's hand
-		hand3Cards = hand3Cards.filter(card => !(card.suit === selectedCard.suit && card.rank === selectedCard.rank));
-		
-		console.log('🎴 East played:', cardId);
-		console.log('🎴 Current trick:', currentTrick);
-		console.log('🎴 Trick players:', trickCardPlayers);
-		
-		// Advance to next player
-		advanceToNextPlayer();
-	}
-
-	// Dummy plays a card (MANUAL - user must click)
-	function playDummyCard() {
-		console.log('🃏 Dummy turn - waiting for manual card click');
-		currentPlayerTurn = 'dummy';
-		
-		if (hand1Cards.length === 0) {
-			console.log('❌ Dummy has no cards left');
-			advanceToNextPlayer();
-			return;
-		}
-		
-		// Set phase to manual play and wait for user to click a card
-		trickPhase = 'manual_play';
-		feedbackMessage = "Dummy turn - click a card to play";
-		console.log('👆 Waiting for user to click Dummy card');
-		
-		// DO NOT play automatically - wait for handleManualCardClick()
-	}
-
-	// Declarer plays a card (MANUAL - user must click)
-	function playDeclarerCard() {
-		console.log('🃏 Declarer turn - waiting for manual card click');
-		currentPlayerTurn = 'declarer';
-		
-		if (hand4Cards.length === 0) {
-			console.log('❌ Declarer has no cards left');
-			advanceToNextPlayer();
-			return;
-		}
-		
-		// Set phase to manual play and wait for user to click a card
-		trickPhase = 'manual_play';
-		feedbackMessage = "Declarer turn - click a card to play";
-		console.log('👆 Waiting for user to click Declarer card');
-		
-		// DO NOT play automatically - wait for handleManualCardClick()
-	}
-
-	// Handle manual card click from Dummy or Declarer
-	function handleManualCardClick(suit: string, rank: string, hand: 'dummy' | 'declarer') {
-		console.log('🎴 Manual card click:', `${suit}-${rank} from ${hand}`);
-		
-		if (trickPhase !== 'manual_play') {
-			console.log('❌ Not in manual play phase');
-			return;
-		}
-		
-		// Check if it's the correct player's turn
-		if (hand === 'dummy' && currentPlayerTurn !== 'dummy') {
-			console.log('❌ Not Dummy\'s turn');
-			return;
-		}
-		if (hand === 'declarer' && currentPlayerTurn !== 'declarer') {
-			console.log('❌ Not Declarer\'s turn');
-			return;
-		}
-		
-		const cardId = `${suit}-${rank}`;
-		
-		// CRITICAL: Check if player must follow suit
-		const leadSuit = getLeadSuit();
-		if (leadSuit) {
-			// Get the player's hand
-			const playerHand = hand === 'dummy' ? hand1Cards : hand4Cards;
-			
-			// Check if player has cards in the lead suit
-			const suitCards = getCardsInSuit(playerHand, leadSuit);
-			
-			if (suitCards.length > 0) {
-				// Player has cards in lead suit - MUST follow suit
-				if (suit !== leadSuit) {
-					console.log('❌ SUIT FOLLOWING VIOLATION: Must play', leadSuit, 'but tried to play', suit);
-					feedbackMessage = `You must follow suit! Play a ${leadSuit} card.`;
-					setTimeout(() => {
-						feedbackMessage = '';
-					}, 3000);
-					return; // Prevent the invalid play
-				}
-			} else {
-				// Player has no cards in lead suit - can play any card (including trump)
-				console.log('🎯 Player cannot follow suit', leadSuit, '- may play any card including trump');
-			}
-		}
-		
-		// Add to current trick and track player
-		currentTrick.push(cardId);
-		trickCardPlayers.push(hand);
-		
-		// Remove from appropriate hand
-		if (hand === 'dummy') {
-			hand1Cards = hand1Cards.filter(card => !(card.suit === suit && card.rank === rank));
-		} else {
-			hand4Cards = hand4Cards.filter(card => !(card.suit === suit && card.rank === rank));
-		}
-		
-		console.log('🎴', hand, 'played:', cardId);
-		console.log('🎴 Current trick:', currentTrick);
-		console.log('🎴 Trick players:', trickCardPlayers);
-		
-		// Set to playing phase and advance to next player
-		console.log('🔄 About to set trickPhase to playing and advance to next player');
-		trickPhase = 'playing';
-		advanceToNextPlayer();
-		console.log('✅ Successfully called advanceToNextPlayer');
-		
-		// Update hints if enabled
-		updateHintsIfEnabled();
-	}
-
-	// Reset the game
-	function resetGame() {
-		console.log('🔄 Resetting Bridge Play Analysis');
-		gameStarted = false;
-		gameCompleted = false;
-		incorrectCount = 0;
-		attemptCount = 0;
-		feedbackMessage = '';
-		manuallyClickedCards = [];
-		handCardFlippedIds = [];
-		allPossibleCardFlippedIds = [];
-		correctlyMatchedCards = [];
-		isAutoFlipping = false;
-		if (autoFlipInterval) {
-			clearInterval(autoFlipInterval);
-			autoFlipInterval = null;
-		}
-		if (autoFlipTimer) {
-			clearTimeout(autoFlipTimer);
-			autoFlipTimer = null;
-		}
-		if (trickTimer) {
-			clearTimeout(trickTimer);
-			trickTimer = null;
-		}
-		allCardsFlippedOnce = false;
-		lastCardFlippedBack = false;
-		
-		// Reset bridge play counters
-		opponentsTricks = 0;
-		declarerTricks = 0;
-		
-		// Reset trick-based state
-		currentTrick = [];
-		trickCardPlayers = []; // Clear player tracking
-		completedTricks = [];
-		currentTrickIndex = 0;
-		trickPhase = 'setup';
-		currentSetTricks = [];
-		tricksInCurrentSet = 0;
-		
-		// Clear hints when game resets
-		clearHint();
-		
-		// Generate cards with retry logic for valid deals
-		let attempts = 0;
-		const maxAttempts = 50;
-		
-		while (attempts < maxAttempts) {
-			attempts++;
-			console.log(`🔄 Reset: Generating deal attempt ${attempts}/${maxAttempts}`);
-			
-			initializeCards();
-			
-			// Validate the generated deal
-			const declarerPoints = calculateHandPoints(hand4Cards);
-			const dummyPoints = calculateDummyPoints(hand1Cards);
-			const validation = validateDeal(hand4Cards, hand1Cards);
-			
-			if (validation.isValid) {
-				console.log('✅ Valid deal generated on attempt', attempts);
-				console.log('   Declarer points:', declarerPoints, '+ Dummy points:', dummyPoints, '=', declarerPoints + dummyPoints);
-				break; // Success! Exit the loop
-			} else {
-				console.log('🔧 Invalid deal - retrying...');
-				console.log('   Issues:', validation.errors.join(', '));
-			}
-		}
-		
-		if (attempts >= maxAttempts) {
-			console.log('⚠️ Warning: Could not generate valid deal after', maxAttempts, 'attempts');
-		}
 	}
 
 	// Trick-based gameplay functions
@@ -1523,7 +1168,7 @@
 
 		const currentHand = hands[currentTrickIndex];
 		const availableCards = currentHand.cards.filter(card => 
-			!isCardInCompletedTricks(`${card.suit}-${card.rank}`)
+			!isCardInCompletedTricks(card.suit + '-' + card.rank)
 		);
 
 		if (availableCards.length === 0) {
@@ -1535,7 +1180,7 @@
 
 		// Select a random card from available cards
 		const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
-		const cardId = `${randomCard.suit}-${randomCard.rank}`;
+		const cardId = randomCard.suit + '-' + randomCard.rank;
 		
 		currentTrick.push(cardId);
 		removeCardFromHand(randomCard.suit, randomCard.rank);
@@ -1545,7 +1190,7 @@
 	}
 
 	function removeCardFromHand(suit: string, rank: string) {
-		console.log(`🗑️ Removing ${suit}-${rank} from hand`);
+		console.log('🗑️ Removing ' + suit + '-' + rank + ' from hand');
 		
 		// Remove from each hand's cards
 		hand1Cards = hand1Cards.filter(card => !(card.suit === suit && card.rank === rank));
@@ -1577,9 +1222,9 @@
 	}
 
 	function checkTrickGuess(suit: string, rank: string) {
-		console.log('🎯 Checking trick guess:', `${suit}-${rank}`);
+		console.log('🎯 Checking trick guess:', suit + '-' + rank);
 		
-		const cardId = `${suit}-${rank}`;
+		const cardId = suit + '-' + rank;
 		attemptCount++;
 		
 		// Check if card is in current set of tricks
@@ -1604,22 +1249,12 @@
 		}
 	}
 
-	// Helper function to get border styling for current player
-	function getCurrentPlayerBorderClass(player: 'dummy' | 'declarer'): string {
-		if (trickPhase === 'manual_play' && currentPlayerTurn === player) {
-			return player === 'dummy' 
-				? 'border-4 border-green-500 shadow-green-500/50 shadow-lg' 
-				: 'border-4 border-blue-500 shadow-blue-500/50 shadow-lg';
-		}
-		return 'border border-indigo-100';
-	}
-
 	// Handle card clicks in manual mode
 	function handleCardClick(suit: 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: string) {
 		if (!gameStarted || gameCompleted || isAutoFlipping) return;
 
-		const cardId = `${suit}-${rank}`;
-		console.log(`🎴 Card clicked: ${cardId}`);
+		const cardId = suit + '-' + rank;
+		console.log('🎴 Card clicked: ' + cardId);
 		
 		// Check if card is already correctly matched
 		if (correctlyMatchedCards.includes(cardId)) {
@@ -1628,7 +1263,7 @@
 		}
 
 		// Check if card is already flipped
-		if (flippedCardIds.includes(cardId)) {
+		if (flippedCardIds().includes(cardId)) {
 			console.log('🎴 Card already flipped, ignoring click');
 			return;
 		}
@@ -1660,7 +1295,7 @@
 			// Check if game is completed (all 52 cards found)
 			if (correctlyMatchedCards.length === 52) {
 				gameCompleted = true;
-				feedbackMessage = `🎉 Congratulations! You found all 52 cards in ${attemptCount} attempts!`;
+				feedbackMessage = '🎉 Congratulations! You found all 52 cards in ' + attemptCount + ' attempts!';
 				returnToSetupPhase(); // Return to setup phase for new deal
 			}
 		} else {
@@ -1710,7 +1345,7 @@
 		
 		while (attempts < maxAttempts) {
 			attempts++;
-			console.log(`🔄 Mount: Generating deal attempt ${attempts}/${maxAttempts}`);
+			console.log('🔄 Mount: Generating deal attempt ' + attempts + '/' + maxAttempts);
 			
 			initializeCards();
 			
@@ -1748,11 +1383,6 @@
 		});
 	}
 
-	// Check if a card is flipped
-	function isCardFlipped(cardId: string): boolean {
-		return [...handCardFlippedIds, ...allPossibleCardFlippedIds].includes(cardId) || correctlyMatchedCards.includes(cardId);
-	}
-
 	// Check if a card is correctly matched
 	function isCardCorrectlyMatched(cardId: string): boolean {
 		return correctlyMatchedCards.includes(cardId);
@@ -1766,7 +1396,7 @@
 	function handleAllPossibleCardsClick(suit: 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: string) {
 		console.log('🎯 ALL POSSIBLE CARDS CLICK FUNCTION CALLED!');
 		
-		const cardId = `${suit}-${rank}`;
+		const cardId = suit + '-' + rank;
 		console.log('=== ALL POSSIBLE CARDS CLICK ===');
 		console.log('Card ID:', cardId);
 		console.log('Trick phase:', trickPhase);
@@ -2170,7 +1800,7 @@
 											<div class="flex flex-wrap gap-1 justify-center">
 												{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
 													{@const cardId = `${suit}-${rank}`}
-													{@const card = {suit, rank}}
+													{@const card = {suit: suit as 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: rank as '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A', id: `${suit}-${rank}`}}
 													{@const isInHand = hand1Cards.some(c => c.suit === suit && c.rank === rank)}
 													{#if isInHand}
 														{@const isClickable = gameStarted && trickPhase === 'manual_play' && currentPlayerTurn === 'dummy'}
@@ -2231,7 +1861,7 @@
 														{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
 														{@const showFaceUp = showOpponentCards ? true : false}
 														<Card 
-															card={card}
+															card={{...card, id: cardId}}
 															size="medium"
 															bridgeTheme={true}
 															showBack={false}
@@ -2255,7 +1885,7 @@
 											<div class="flex flex-wrap gap-3 justify-center">
 												{#each currentTrick as cardId, i}
 													{@const [suit, rank] = cardId.split('-')}
-													{@const card = {suit, rank}}
+													{@const card = {suit: suit as 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: rank as '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A', id: `${suit}-${rank}`}}
 													{@const player = trickCardPlayers[i]}
 													{@const playerLabel = player === 'west' ? 'W' : player === 'dummy' ? 'Dum' : player === 'east' ? 'E' : 'Dec'}
 													<div class="flex flex-col items-center">
@@ -2317,7 +1947,7 @@
 														{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
 														{@const showFaceUp = showOpponentCards ? true : false}
 														<Card 
-															card={card}
+															card={{...card, id: cardId}}
 															size="medium"
 															bridgeTheme={true}
 															showBack={false}

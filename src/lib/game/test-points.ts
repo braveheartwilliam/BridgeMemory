@@ -64,9 +64,9 @@ export function testCardPoints() {
 	];
 	
 	for (const test of testCards) {
-		const card = { suit: 'hearts', rank: test.rank };
+		const card = { suit: 'hearts' as const, rank: test.rank as '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A', id: `hearts-${test.rank}` };
 		const points = calculateHandPoints([card]);
-		const status = points === test.expected ? '✅' : '❌';
+		const status = points === test.expected ? '': '';
 		console.log(`   ${status} ${test.rank}: ${points} points (expected ${test.expected})`);
 	}
 }

@@ -1,7 +1,7 @@
 import { auth } from '$lib/auth';
 import { redirect, error } from '@sveltejs/kit';
 
-export async function handle({ event }) {
+export async function GET({ event }) {
   const session = await auth.api.getSession({
     headers: event.request.headers,
   });
@@ -17,11 +17,11 @@ export async function handle({ event }) {
   });
 }
 
-export async function POST({ event }) {
+export async function POST({ request }) {
   try {
-    const result = await auth.api.signIn({
-      body: await event.request.json(),
-      headers: event.request.headers,
+    const result = await auth.api.signInEmail({
+      body: await request.json(),
+      headers: request.headers,
     });
 
     return new Response(JSON.stringify(result), {

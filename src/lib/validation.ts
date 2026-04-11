@@ -13,12 +13,8 @@ export const userSchema = z.object({
 
 // Game session validation schemas
 export const gameSessionSchema = z.object({
-  gameMode: z.enum(['manual', 'automated', 'played-card'], {
-    errorMap: () => ({ message: 'Please select a valid game mode' })
-  }),
-  selectedPlayers: z.enum(['random', 'specific'], {
-    errorMap: () => ({ message: 'Please select a valid player option' })
-  }),
+  gameMode: z.enum(['manual', 'automated', 'played-card']),
+  selectedPlayers: z.enum(['random', 'specific']),
   contractLevel: z.string().optional(),
   declarerPosition: z.enum(['north', 'south', 'east', 'west']).optional()
 });
@@ -42,12 +38,8 @@ export const bridgeHandSchema = z.object({
 
 export const contractSchema = z.object({
   level: z.number().min(1).max(7, 'Contract level must be between 1 and 7'),
-  suit: z.enum(['clubs', 'diamonds', 'hearts', 'spades', 'nt'], {
-    errorMap: () => ({ message: 'Please select a valid suit or No Trump' })
-  }),
-  declarer: z.enum(['north', 'south', 'east', 'west'], {
-    errorMap: () => ({ message: 'Please select a declarer' })
-  }),
+  suit: z.enum(['clubs', 'diamonds', 'hearts', 'spades', 'nt']),
+  declarer: z.enum(['north', 'south', 'east', 'west']),
   vulnerability: z.enum(['none', 'ns', 'ew', 'both']).default('none')
 });
 
@@ -89,7 +81,7 @@ export function validateForm<T>(schema: z.ZodSchema<T>, data: unknown): {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: Record<string, string> = {};
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         const path = err.path.join('.');
         errors[path] = err.message;
       });

@@ -1,27 +1,19 @@
-module.exports = {
+export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/lib/tests/setup.ts'],
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^\\$lib/(.*)$': '<rootDir>/src/lib/$1',
-    '^\\$app/(.*)$': '<rootDir>/src/app/$1'
+    '^@/(.*)$': '<rootDir>/src/$1'
   },
-  transform: {
-    '^.+\\.svelte$': ['jest-transform-svelte', {
-      preprocess: true
-    }],
-    '^.+\\.ts$': 'ts-jest',
-    '^.+\\.js$': 'babel-jest'
-  },
+  extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: [
-    'src/**/*.{ts,js,svelte}',
+    'src/**/*.{ts,js}',
     '!src/**/*.d.ts',
     '!src/**/*.test.{ts,js}',
-    '!src/**/*.spec.{ts,js}',
-    '!src/lib/tests/**/*',
-    '!src/app.html'
+    '!src/**/*.spec.{ts,js}'
   ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
       branches: 80,

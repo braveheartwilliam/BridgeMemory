@@ -1,0 +1,57 @@
+function await_invalid() {
+  const error = new Error(`await_invalid
+Encountered asynchronous work while rendering synchronously.
+https://svelte.dev/e/await_invalid`);
+  error.name = "Svelte error";
+  throw error;
+}
+function hydratable_clobbering(key, stack) {
+  const error = new Error(`hydratable_clobbering
+Attempted to set \`hydratable\` with key \`${key}\` twice with different values.
+
+${stack}
+https://svelte.dev/e/hydratable_clobbering`);
+  error.name = "Svelte error";
+  throw error;
+}
+function hydratable_serialization_failed(key, stack) {
+  const error = new Error(`hydratable_serialization_failed
+Failed to serialize \`hydratable\` data for key \`${key}\`.
+
+\`hydratable\` can serialize anything [\`uneval\` from \`devalue\`](https://npmjs.com/package/uneval) can, plus Promises.
+
+Cause:
+${stack}
+https://svelte.dev/e/hydratable_serialization_failed`);
+  error.name = "Svelte error";
+  throw error;
+}
+function invalid_csp() {
+  const error = new Error(`invalid_csp
+\`csp.nonce\` was set while \`csp.hash\` was \`true\`. These options cannot be used simultaneously.
+https://svelte.dev/e/invalid_csp`);
+  error.name = "Svelte error";
+  throw error;
+}
+function server_context_required() {
+  const error = new Error(`server_context_required
+Could not resolve \`render\` context.
+https://svelte.dev/e/server_context_required`);
+  error.name = "Svelte error";
+  throw error;
+}
+function get_render_context() {
+  const store = als?.getStore();
+  {
+    server_context_required();
+  }
+  return store;
+}
+let als = null;
+export {
+  await_invalid as a,
+  hydratable_serialization_failed as b,
+  get_render_context as g,
+  hydratable_clobbering as h,
+  invalid_csp as i
+};

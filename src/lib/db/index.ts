@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { eq, desc } from 'drizzle-orm';
 import * as schema from './schema';
 
 // Database connection configuration
@@ -34,9 +35,9 @@ export async function getDatabaseConnection() {
 
 // Transaction helper
 export async function withTransaction<T>(
-  callback: (tx: typeof db) => Promise<T>
+  callback: (tx: Parameters<typeof db.transaction>[0]) => Promise<T>
 ): Promise<T> {
-  return db.transaction(callback);
+  return db.transaction(callback as any);
 }
 
 // Query helpers
@@ -68,16 +69,34 @@ export class DatabaseService {
     return session || null;
   }
 
+  static async updateGameSession(id: number, updates: Partial<schema.NewGameSession>) {
+    const [session] = await db
+      .update(schema.gameSessions)
+      .set(updates)
+      .where(eq(schema.gameSessions.id, id))
+      .returning();
+    return session;
+  }
+
   static async getUserGameSessions(userId: number) {
     return await db.select()
       .from(schema.gameSessions)
       .where(eq(schema.gameSessions.userId, userId))
-      .orderBy(desc(schema.gameSessions.createdAt));
+      .orderBy(desc(schema.gameSessions.startedAt));
   }
 
   // Card hand operations
   static async createCardHand(handData: schema.NewCardHand) {
     const [hand] = await db.insert(schema.cardHands).values(handData).returning();
+    return hand;
+  }
+
+  static async updateCardHand(id: number, updates: Partial<schema.NewCardHand>) {
+    const [hand] = await db
+      .update(schema.cardHands)
+      .set(updates)
+      .where(eq(schema.cardHands.id, id))
+      .returning();
     return hand;
   }
 

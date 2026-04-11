@@ -87,8 +87,8 @@ export class GameStateService {
     // Save hands if they've changed
     for (const hand of gameState.hands) {
       await DatabaseService.updateCardHand(hand.id, {
-        cards: hand.cards,
-        handPoints: this.calculateHandPoints(hand.cards)
+        cards: hand.cards as Card[],
+        handPoints: this.calculateHandPoints(hand.cards as Card[])
       });
     }
 

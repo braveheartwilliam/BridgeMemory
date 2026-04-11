@@ -23,7 +23,7 @@
 				<span class="capitalize font-medium">{suit}:</span>
 				<div class="flex flex-wrap gap-1 mt-1">
 					{#each getCardsBySuit(playedCards, suit) as card}
-						<Card {card} size="small" />
+						<Card card={{...card, id: `${card.suit}-${card.rank}`}} size="small" />
 					{/each}
 				</div>
 			</div>
@@ -34,7 +34,7 @@
 		<h4 class="font-semibold">Remaining Cards: {remainingCards.length}</h4>
 		<div class="flex flex-wrap gap-1">
 			{#each remainingCards.slice(0, 20) as card}
-				<Card {card} size="small" />
+				<Card card={{...card, id: `${card.suit}-${card.rank}`}} size="small" />
 			{/each}
 			{#if remainingCards.length > 20}
 				<span class="text-sm text-gray-500">...and {remainingCards.length - 20} more</span>

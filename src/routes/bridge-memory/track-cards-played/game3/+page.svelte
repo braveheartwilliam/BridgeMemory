@@ -10,7 +10,7 @@
 	let gameCompleted = $state<boolean>(false);  // Track if game is completed
 	let flipInterval = $state<number>(2.0);  // Time between card flips in seconds
 	let isAutoFlipping = $state<boolean>(false);  // Track if auto flipping is active
-	let autoFlipInterval: number | null = null;  // Store interval ID
+	let autoFlipInterval: ReturnType<typeof setInterval> | null = null;  // Store interval ID
 	let flipSequence = $state<'random' | 'ordered'>('ordered');  // For backward compatibility, keep flippedCardIds as the union of both
 	let flippedCardIds = $state<string[]>([]);  // Cards clicked in "Your Hand"
 	let allPossibleCardFlippedIds = $state<string[]>([]);  // Cards clicked in "All Possible Cards"
@@ -19,7 +19,7 @@
 	let attemptCount = $state<number>(0);
 	let feedbackMessage = $state<string>('');
 	let isProcessing = $state<boolean>(false);
-	let autoFlipTimer = $state<number | null>(null);
+	let autoFlipTimer = $state<ReturnType<typeof setTimeout> | null>(null);
 	let handCardFlippedIds = $state<string[]>([]);  // Cards clicked in "Your Hand"
 	let manuallyClickedCards = $state<string[]>([]);  // Track all cards clicked in manual mode
 	let currentFlippedCard = $state<string | null>(null);
@@ -35,7 +35,7 @@
 	let completedTricks = $state<string[][]>([]); // All completed tricks
 	let currentTrickIndex = $state(0); // Index for trick formation
 	let trickPhase = $state<'setup' | 'playing' | 'memory' | 'guessing'>('setup'); // Game phase
-	let trickTimer = $state<number | null>(null); // Timer for trick display
+	let trickTimer = $state<ReturnType<typeof setTimeout> | null>(null); // Timer for trick display
 	let currentSetTricks = $state<string[][]>([]); // Tricks in current memory set
 	let tricksInCurrentSet = $state(0); // Count of tricks in current set
 
@@ -79,7 +79,7 @@
 		allPossibleCards = [];
 		for (const suit of suits) {
 			for (const rank of ranks) {
-				allPossibleCards.push({ suit, rank });
+				allPossibleCards.push({ suit, rank, id: `${suit}-${rank}` });
 			}
 		}
 
@@ -728,7 +728,7 @@
 											<div class="flex flex-wrap gap-1 justify-center">
 												{#each ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'] as rank}
 													{@const cardId = `${suit}-${rank}`}
-													{@const card = {suit, rank}}
+													{@const card = {suit: suit as 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: rank as '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A', id: cardId}}
 													{@const isInHand = hand1Cards.some(c => c.suit === suit && c.rank === rank)}
 													{#if isInHand}
 														<Card 
@@ -759,7 +759,7 @@
 												<div class="flex flex-wrap gap-3 justify-center">
 													{#each currentTrick as cardId}
 														{@const [suit, rank] = cardId.split('-')}
-														{@const card = {suit, rank}}
+														{@const card = {suit: suit as 'hearts' | 'diamonds' | 'clubs' | 'spades', rank: rank as '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A', id: cardId}}
 														<div class="transform scale-110">
 															<Card 
 																card={card}
@@ -798,7 +798,7 @@
 														{@const isFlipped = isAllPossibleCardFlipped(cardId)}
 														{#if !isFlipped}
 															<button
-																onclick={() => handleAllPossibleCardsClick(suit, rank)}
+																onclick={() => handleAllPossibleCardsClick(suit as 'hearts' | 'diamonds' | 'clubs' | 'spades', rank)}
 																class="px-2 py-1 text-xs font-semibold rounded border transition-all duration-150 min-w-[2rem] h-[1.8rem] {suit === 'hearts' || suit === 'diamonds' ? 'text-red-600 border-red-300' : 'text-black border-gray-300'} hover:bg-gray-50 hover:shadow-lg"
 															>
 																{#if suit === 'spades'}♠{:else if suit === 'hearts'}♥{:else if suit === 'clubs'}♣{:else if suit === 'diamonds'}♦{/if}{rank}
@@ -832,7 +832,7 @@
 														{@const cardId = `${card.suit}-${card.rank}`}
 														{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
 														<Card 
-															card={card}
+															card={{...card, id: cardId}}
 															size="medium"
 															bridgeTheme={true}
 															showBack={false}
@@ -863,7 +863,7 @@
 														{@const cardId = `${card.suit}-${card.rank}`}
 														{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
 														<Card 
-															card={card}
+															card={{...card, id: cardId}}
 															size="medium"
 															bridgeTheme={true}
 															showBack={false}
@@ -894,7 +894,7 @@
 														{@const cardId = `${card.suit}-${card.rank}`}
 														{@const isFlipped = handCardFlippedIds.includes(cardId) || correctlyMatchedCards.includes(cardId)}
 														<Card 
-															card={card}
+															card={{...card, id: cardId}}
 															size="medium"
 															bridgeTheme={true}
 															showBack={false}
