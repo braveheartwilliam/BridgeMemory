@@ -61,7 +61,9 @@ declare module '$env/static/private' {
 	export const VSCODE_GIT_EDITOR_EXTRA_ARGS: string;
 	export const CONDA_PROMPT_MODIFIER: string;
 	export const MallocNanoZone: string;
+	export const GIT_CONFIG_PARAMETERS: string;
 	export const COLOR: string;
+	export const GIT_AUTHOR_DATE: string;
 	export const npm_config_noproxy: string;
 	export const npm_config_local_prefix: string;
 	export const ZSH: string;
@@ -75,8 +77,10 @@ declare module '$env/static/private' {
 	export const VSCODE_GIT_EDITOR_NODE: string;
 	export const CONDA_EXE: string;
 	export const SSH_AUTH_SOCK: string;
+	export const GIT_INDEX_FILE: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
+	export const GIT_AUTHOR_NAME: string;
 	export const PAGER: string;
 	export const ELECTRON_RUN_AS_NODE: string;
 	export const LSCOLORS: string;
@@ -84,7 +88,6 @@ declare module '$env/static/private' {
 	export const PATH: string;
 	export const GSETTINGS_SCHEMA_DIR: string;
 	export const npm_package_json: string;
-	export const _: string;
 	export const BRAVE_API_KEY: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
@@ -111,7 +114,6 @@ declare module '$env/static/private' {
 	export const SSH_ASKPASS: string;
 	export const SHLVL: string;
 	export const HOME: string;
-	export const GIT_HTTP_USER_AGENT: string;
 	export const VSCODE_GIT_ASKPASS_MAIN: string;
 	export const LANGUAGE: string;
 	export const VSCODE_NLS_CONFIG: string;
@@ -135,12 +137,14 @@ declare module '$env/static/private' {
 	export const INFOPATH: string;
 	export const HOMEBREW_CELLAR: string;
 	export const GIT_ASKPASS: string;
+	export const GIT_AUTHOR_EMAIL: string;
 	export const GIT_PAGER: string;
 	export const VSCODE_L10N_BUNDLE_LOCATION: string;
 	export const VSCODE_CWD: string;
 	export const GIT_EXEC_PATH: string;
 	export const npm_node_execpath: string;
 	export const npm_config_prefix: string;
+	export const _: string;
 	export const VITE_USER_NODE_ENV: string;
 }
 
@@ -251,7 +255,9 @@ declare module '$env/dynamic/private' {
 		VSCODE_GIT_EDITOR_EXTRA_ARGS: string;
 		CONDA_PROMPT_MODIFIER: string;
 		MallocNanoZone: string;
+		GIT_CONFIG_PARAMETERS: string;
 		COLOR: string;
+		GIT_AUTHOR_DATE: string;
 		npm_config_noproxy: string;
 		npm_config_local_prefix: string;
 		ZSH: string;
@@ -265,8 +271,10 @@ declare module '$env/dynamic/private' {
 		VSCODE_GIT_EDITOR_NODE: string;
 		CONDA_EXE: string;
 		SSH_AUTH_SOCK: string;
+		GIT_INDEX_FILE: string;
 		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
+		GIT_AUTHOR_NAME: string;
 		PAGER: string;
 		ELECTRON_RUN_AS_NODE: string;
 		LSCOLORS: string;
@@ -274,7 +282,6 @@ declare module '$env/dynamic/private' {
 		PATH: string;
 		GSETTINGS_SCHEMA_DIR: string;
 		npm_package_json: string;
-		_: string;
 		BRAVE_API_KEY: string;
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
@@ -301,7 +308,6 @@ declare module '$env/dynamic/private' {
 		SSH_ASKPASS: string;
 		SHLVL: string;
 		HOME: string;
-		GIT_HTTP_USER_AGENT: string;
 		VSCODE_GIT_ASKPASS_MAIN: string;
 		LANGUAGE: string;
 		VSCODE_NLS_CONFIG: string;
@@ -325,12 +331,14 @@ declare module '$env/dynamic/private' {
 		INFOPATH: string;
 		HOMEBREW_CELLAR: string;
 		GIT_ASKPASS: string;
+		GIT_AUTHOR_EMAIL: string;
 		GIT_PAGER: string;
 		VSCODE_L10N_BUNDLE_LOCATION: string;
 		VSCODE_CWD: string;
 		GIT_EXEC_PATH: string;
 		npm_node_execpath: string;
 		npm_config_prefix: string;
+		_: string;
 		VITE_USER_NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
